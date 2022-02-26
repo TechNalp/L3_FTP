@@ -6,24 +6,24 @@ import java.nio.file.FileSystems;
 
 public class CommandeCD extends Commande {
 	
-	public CommandeCD(PrintStream ps, String commandeStr) {
-		super(ps, commandeStr);
+	public CommandeCD(PrintStream ps, String commandeStr,Server srv) {
+		super(ps, commandeStr,srv);
 	}
 
 	public void execute() {
 		if(commandeArgs.length == 0 ){
-			Commande.CWD = System.getProperty("user.dir")+FileSystems.getDefault().getSeparator()+".";
+			this.srv.CWD = System.getProperty("user.dir")+FileSystems.getDefault().getSeparator()+".";
 		}else if(commandeArgs[0].equalsIgnoreCase(".")) {
 			ps.println("2 Vous êtes déjà dans ce répertoire");
 			return;
 		}else {
 			try {
-				if(new File(Commande.CWD+FileSystems.getDefault().getSeparator()+commandeArgs[0]).exists()) {
-					Commande.CWD = new File(Commande.CWD+FileSystems.getDefault().getSeparator()+commandeArgs[0]).getCanonicalPath();
+				if(new File(this.srv.CWD+FileSystems.getDefault().getSeparator()+commandeArgs[0]).exists()) {
+					this.srv.CWD = new File(this.srv.CWD+FileSystems.getDefault().getSeparator()+commandeArgs[0]).getCanonicalPath();
 				}else {
 					File temp = new File(commandeArgs[0]);
 					if(temp.exists()) {
-						Commande.CWD = temp.getCanonicalPath();
+						this.srv.CWD = temp.getCanonicalPath();
 					}else {
 						ps.println("2 Ce répertoire n'existe pas");
 						return;
@@ -32,7 +32,7 @@ public class CommandeCD extends Commande {
 			} catch (IOException e) {
 			}
 		}
-		ps.println("0 Entré dans : "+  Commande.CWD);
+		ps.println("0 Entré dans : "+  this.srv.CWD);
 	}
 
 }

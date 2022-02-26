@@ -6,11 +6,11 @@ public abstract class Commande {
 	protected PrintStream ps;
 	protected String commandeNom = "";
 	protected String [] commandeArgs ;
+	protected Server srv;
 
-	protected static String CWD = new File(".").getAbsolutePath();
-
-	public Commande(PrintStream ps, String commandeStr) {
+	public Commande(PrintStream ps, String commandeStr, Server srv) {
 		this.ps = ps ;
+		this.srv = srv;
 		String [] args = commandeStr.split(" ");
 		commandeNom = args[0];
 		commandeArgs = new String[args.length-1];

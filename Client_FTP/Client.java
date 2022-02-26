@@ -71,7 +71,6 @@ public class Client {
 	
 	public static void envoyerCommande(String cmd) {
 		ps.println(cmd);
-		ps.flush();
 	}
 	
 }

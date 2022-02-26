@@ -3,22 +3,22 @@ import java.nio.file.FileSystems;
 
 public class CommandePASS extends Commande {
 	
-	public CommandePASS(PrintStream ps, String commandeStr) {
-		super(ps, commandeStr);
+	public CommandePASS(PrintStream ps, String commandeStr,Server srv) {
+		super(ps, commandeStr, srv);
 	}
 
 	public void execute() {
 		// Le mot de passe est : abcd
-		if((!CommandExecutor.userOk) || CommandExecutor.userConnecting.isBlank()) {
+		if((!srv.userOk) || srv.userConnecting.isBlank()) {
 			ps.println("2 Veuillez d'abord saisir votre nom d'utilisateur avec la commande user");
 		}else{
 			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Main.userDataPath + CommandExecutor.userConnecting+ FileSystems.getDefault().getSeparator()+"pw.txt")));
+				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Main.userDataPath + srv.userConnecting+ FileSystems.getDefault().getSeparator()+"pw.txt")));
 				String verifMdp = br.readLine();
 				br.close();
 
 				if(verifMdp.equals(commandeArgs[0])){
-					CommandExecutor.pwOk = true;
+					srv.pwOk = true;
 					ps.println("1 Commande pass OK");
 					ps.println("0 Vous êtes bien connecté sur notre serveur");
 

@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.TreeMap;
 
 
 public class Main {
@@ -21,43 +22,12 @@ public class Main {
 		boolean acceptNewClient = true;
 		ServerSocket serveurFTP = new ServerSocket(2121);
 		while(acceptNewClient) {
-			System.out.println("Attente client...");
+			System.out.println("[MAIN] Attente client...");
 			Socket socket = serveurFTP.accept();
-			System.out.println("Client connecté !");
-			try {
+			System.out.println("[MAIN] Client connecté !");
 
-				BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				PrintStream ps = new PrintStream(socket.getOutputStream());
-
-				ps.println("1 Bienvenue ! ");
-				ps.println("1 Serveur FTP Personnel.");
-				ps.println("0 Authentification : ");
-
-				String commande = "";
-
-				// Attente de reception de commandes et leur execution
-
-				while (!(commande = br.readLine()).equals("bye")) {
-					System.out.println(">> " + commande);
-					CommandExecutor.executeCommande(ps, commande);
-				}
-
-				System.out.println("\nClient déconnecté\n");
-				Commande.CWD = new File(".").getCanonicalPath();
-				CommandExecutor.userOk = false;
-				CommandExecutor.pwOk = false;
-				socket.close();
-				continue;
-
-			} catch (SocketException e) {
-				System.out.println("\nClient déconnecté\n");
-				Commande.CWD = new File(".").getCanonicalPath();
-				CommandExecutor.userOk = false;
-				CommandExecutor.pwOk = false;
-				socket.close();
-				continue;
-
-			}
+			Thread serverThread = new Thread(new Server(socket));
+			serverThread.start();
 
 		}
 
