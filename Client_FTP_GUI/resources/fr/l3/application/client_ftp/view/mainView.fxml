@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="mainContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="500.0" prefHeight="600.0" prefWidth="1000.0" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.l3.application.client_ftp.controller.MainController">
+    <AnchorPane id="head" prefHeight="84.0" prefWidth="1000.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <MenuBar prefHeight="25.0" prefWidth="970.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <menus>
+                <Menu mnemonicParsing="false" text="Fichier">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Fermer" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <ToolBar id="headToolBar" layoutY="25.0" prefHeight="21.0" prefWidth="1000.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+    </AnchorPane>
+
+</AnchorPane>
