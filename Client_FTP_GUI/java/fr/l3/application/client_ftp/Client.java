@@ -4,10 +4,7 @@ import fr.l3.application.client_ftp.controller.ConnexionController;
 import fr.l3.application.client_ftp.service.CommunicationService;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 
 
 public class Client {
@@ -15,7 +12,7 @@ public class Client {
 	static private BufferedReader rd = null;
 	static private PrintStream ps = null;
 	static private Socket sck_cmd = null;
-	static String hostname ="";
+	public static String hostname ="";
 	static int port = 0;
 	
 	public static String lireClavier() throws IOException {
@@ -27,15 +24,27 @@ public class Client {
 		return Client.sck_cmd;
 	}
 	
-	
+
+	private static void verifConnexion() throws IOException {
+		System.out.println("ok");
+		Client.sck_cmd.setSoTimeout(2000);
+
+		System.out.println("tets");
+		System.out.println(Client.sck_cmd.getInputStream().read());
+
+		System.out.println("lol");
+
+	}
+
 	public static void connexionServeur(String hostname, int port) throws IOException {
 		try {
 			Client.sck_cmd = new Socket();
 			Client.sck_cmd.connect(new InetSocketAddress(hostname,port),1000);
-
-		}catch (IOException e){
+			Client.verifConnexion();
+		} catch (IOException e){
 			MainApp.getConsoleController().addError("Impossible de se connecter à l'adresse : "+hostname+":"+port);
 			MainApp.getConnexionController().stopConnexion();
+			return;
 		}
 
 		Client.rd = new BufferedReader(new InputStreamReader(Client.sck_cmd.getInputStream()));
@@ -53,6 +62,7 @@ public class Client {
 	public static String ecouterServeur() throws IOException{
 		return Client.rd.readLine();
 	}
+
 	
 	public static void analyseCmdSend(String cmd, String rep_serv) throws UnknownHostException, IOException {
 
@@ -85,7 +95,7 @@ public class Client {
 		nt.start();
 	}
 	
-	public static void envoyerCommande(String cmd) {
+	public static void envoyerCommande(String cmd) throws SocketException{
 		ps.println(cmd);
 	}
 	
