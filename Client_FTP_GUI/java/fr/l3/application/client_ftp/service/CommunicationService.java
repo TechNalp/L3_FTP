@@ -15,6 +15,8 @@ public class CommunicationService extends Service<Void> {
     private String hote;
     private int port;
     private  boolean addressFound = false;
+    private boolean connected = false; //Indique si on est actuellent connecté à un serveur
+
     public CommunicationService(String hote, int port) {
         this.hote = hote;
         this.port=port;
@@ -38,7 +40,7 @@ public class CommunicationService extends Service<Void> {
                                 }
                                 CommunicationService.this.hote = InetAddress.getByName(CommunicationService.this.hote).getHostAddress();
                                 CommunicationService.this.addressFound = true;
-                            } catch (java.net.UnknownHostException e) {
+                            } catch (UnknownHostException e) {
                                 if(Thread.currentThread().isInterrupted()){
                                     return;
                                 }
@@ -66,7 +68,17 @@ public class CommunicationService extends Service<Void> {
 
                 try {
                     MainApp.getConsoleController().addText("Adresse ip trouvée : "+CommunicationService.this.hote);
-                    Client.connexionServeur(CommunicationService.this.hote, CommunicationService.this.port);
+                    try {
+                        if(!Client.connexionServeur(CommunicationService.this.hote, CommunicationService.this.port)){
+                            CommunicationService.this.connected = false;
+                        }else{
+                            CommunicationService.this.connected = true;
+                        }
+                    }catch (SocketException e){
+                        CommunicationService.this.connected = false;
+                        throw e;
+                    }
+
                     String cmd = "";
 
                     String rep_serveur = "";
@@ -84,7 +96,6 @@ public class CommunicationService extends Service<Void> {
                                 MainApp.getConsoleController().addText(rep_serveur);
                             }
 
-
                             cmd = "";
                         }
                         while (!(rep_serveur.substring(0, 1).contains("0") || rep_serveur.substring(0, 1).contains("2")));
@@ -93,13 +104,16 @@ public class CommunicationService extends Service<Void> {
 
                         Client.envoyerCommande(cmd);
 
-
                     }
                 }catch (SocketException e){
-                    MainApp.getConsoleController().addError("Le Serveur s'est déconnecté");
+                    if(CommunicationService.this.connected) {
+                        MainApp.getConsoleController().addError("Le Serveur s'est déconnecté");
+                        CommunicationService.this.connected = false;
+                    }
                     MainApp.getConnexionController().stopConnexion();
                     return null;
-                } catch (IOException e){}
+                } catch (IOException e){
+                }
                return null;
             }
         };

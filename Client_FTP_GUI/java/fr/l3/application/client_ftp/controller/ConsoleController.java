@@ -48,8 +48,14 @@ public class ConsoleController implements Initializable {
             sp.layout();
             });
 
+    }
 
-
+    public synchronized void appendText(String text){
+        Platform.runLater(()->{
+            textFlow.getChildren().add(new Text(text));
+            sp.setVvalue(1.0);
+            sp.layout();
+        });
     }
 
 }

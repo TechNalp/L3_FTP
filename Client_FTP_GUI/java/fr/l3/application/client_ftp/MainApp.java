@@ -53,16 +53,15 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage mainWindow) throws IOException {
-        this.mainWindow = mainWindow;
-        this.intitMainWindow();
-
-        this.showMain();
-        this.showConnexionButtons();
-        this.showConsole();
+        this.intitMainWindow(mainWindow);
+        this.loadMainWindow();
+        this.loadConnexionButtons();
+        this.loadConsole();
         this.mainWindow.show();
     }
 
-    public void intitMainWindow(){
+    public void intitMainWindow(Stage mainWindow){
+        this.mainWindow = mainWindow;
         this.mainWindow.setTitle("Client FTP - Mathis PLANCHET");
         this.mainWindow.setWidth(1000);
         this.mainWindow.setHeight(600);
@@ -72,7 +71,7 @@ public class MainApp extends Application {
     }
 
 
-    private void showMain()  throws IOException{
+    private void loadMainWindow()  throws IOException{
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(MainApp.class.getResource("view/mainView.fxml"));
         this.rootLayout = (Pane) loader.load();
@@ -83,7 +82,7 @@ public class MainApp extends Application {
 
     //public void
 
-    private void showConsole() throws IOException{
+    private void loadConsole() throws IOException{
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(MainApp.class.getResource("view/console.fxml"));
         AnchorPane ap = (AnchorPane) loader.load();
@@ -96,7 +95,7 @@ public class MainApp extends Application {
         MainApp.cc.addText("Console Initialisé");
     }
 
-    private void showConnexionButtons() throws IOException{
+    private void loadConnexionButtons() throws IOException{
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(MainApp.class.getResource("view/connexionButtons.fxml"));
         AnchorPane ap = (AnchorPane) loader.load();

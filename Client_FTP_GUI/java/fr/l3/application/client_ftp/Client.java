@@ -4,7 +4,9 @@ import fr.l3.application.client_ftp.controller.ConnexionController;
 import fr.l3.application.client_ftp.service.CommunicationService;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.*;
+import java.util.concurrent.TimeoutException;
 
 
 public class Client {
@@ -25,32 +27,34 @@ public class Client {
 	}
 	
 
-	private static void verifConnexion() throws IOException {
-		System.out.println("ok");
+	private static boolean verifConnexion() throws IOException {
+		MainApp.getConsoleController().addText("Verification de la connexion");
 		Client.sck_cmd.setSoTimeout(2000);
-
-		System.out.println("tets");
-		System.out.println(Client.sck_cmd.getInputStream().read());
-
-		System.out.println("lol");
-
+		int connexionVerif;
+		connexionVerif = Client.sck_cmd.getInputStream().read();
+		Client.sck_cmd.setSoTimeout(0);
+		Client.sck_cmd.getOutputStream().write(connexionVerif+48); // Permet de confirmer au serveur que l'on est un client compatible
+		return true;
 	}
 
-	public static void connexionServeur(String hostname, int port) throws IOException {
+	public static boolean connexionServeur(String hostname, int port) throws IOException {
 		try {
 			Client.sck_cmd = new Socket();
 			Client.sck_cmd.connect(new InetSocketAddress(hostname,port),1000);
-			Client.verifConnexion();
+			if(!Client.verifConnexion()){
+				return false;
+			}
 		} catch (IOException e){
 			MainApp.getConsoleController().addError("Impossible de se connecter à l'adresse : "+hostname+":"+port);
 			MainApp.getConnexionController().stopConnexion();
-			return;
+			return false;
 		}
 
 		Client.rd = new BufferedReader(new InputStreamReader(Client.sck_cmd.getInputStream()));
 		Client.ps = new PrintStream(Client.sck_cmd.getOutputStream());
 		Client.hostname = hostname;
 		Client.port = port;
+		return true;
 	}
 	
 	public static void deconnexionServeur() throws IOException {
