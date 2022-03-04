@@ -59,7 +59,8 @@ public class CommunicationService extends Service<Void> {
     public void stopConnexion(){
         if(this.connected){
             MainApp.getCommunicationService().thEcoute.interrupt();
-            MainApp.getCommunicationService().thEcoute.interrupt();
+            System.out.print('\n');
+            MainApp.getCommunicationService().thEnvoi.interrupt();
             try {
                 Client.getSocket().close();
             }catch (IOException e){
@@ -67,7 +68,6 @@ public class CommunicationService extends Service<Void> {
             }
         }
         this.connected = false;
-        System.out.println("##### "+this.connected +" "+CommunicationService.this.connected +" " + MainApp.getCommunicationService().connected +" "  +MainApp.getCommunicationService().isConnected() );
         Platform.runLater(this::cancel);
 
     }
@@ -79,12 +79,10 @@ public class CommunicationService extends Service<Void> {
             @Override
             protected Void call() {
                 CommunicationService.this.normalStop = false;
-                /*try {
-                    System.out.println(System.in.readNBytes(System.in.available()));
-                } catch (IOException e) {System.out.println("errrrrrreeeeeeeeeuuuuuurrrrr");}*/
+              
                 MainApp.getConsoleController().addText("Tentative de résolution de l'hôte");
                 CommunicationService.this.addressFound=false;
-                    Thread th = new Thread(){
+                    Thread th = new Thread("Verification Hote"){
                         @Override
                         public void run(){
                             try {
@@ -160,15 +158,24 @@ public class CommunicationService extends Service<Void> {
                                     MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
                                 }
                             }
-                        });
+                        },"Ecoute");
 
 
                         CommunicationService.this.thEnvoi = new Thread(()->{
+                        	String temp = "";
                             while(!Thread.currentThread().isInterrupted()){
                                 try {
-                                    CommunicationService.this.lastCmd = Client.lireClavier();
+                                	
+                                    temp = Client.lireClavier();
+                                    
                                     if(Thread.currentThread().isInterrupted()){
                                         return;
+                                    }
+                                    
+                                    if(temp==null) {
+                                    	continue;
+                                    }else {
+                                    	CommunicationService.this.lastCmd = temp;
                                     }
                                     Client.envoyerCommande( CommunicationService.this.lastCmd);
 
@@ -180,7 +187,7 @@ public class CommunicationService extends Service<Void> {
                                     return;
                                 }
                             }
-                        });
+                        },"Envoi");
 
 
                         MainApp.getCommunicationService().thEcoute.start();

@@ -12,7 +12,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import java.io.Console;
 import java.io.IOException;
 
 public class MainApp extends Application {
@@ -108,7 +107,6 @@ public class MainApp extends Application {
             MainApp.cs = new CommunicationService(hote,port);
             MainApp.cs.start();
         }else {
-            System.out.println(MainApp.cs.isConnected() + " "+MainApp.cs.isRunning());
             if (MainApp.cs.isConnected() || MainApp.cs.isRunning()){
                 MainApp.cc.addError("Une connexion est déjà en cours");
             }else{

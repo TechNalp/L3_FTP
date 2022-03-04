@@ -16,10 +16,19 @@ public class Client {
 	static private Socket sck_cmd = null;
 	public static String hostname ="";
 	static int port = 0;
+	static BufferedReader keyboardInput = new BufferedReader(new InputStreamReader(System.in));
 	
 	public static String lireClavier() throws IOException {
-		String str = new BufferedReader(new InputStreamReader(System.in)).readLine();
-		return str;
+		long startTime = System.currentTimeMillis();
+		while(System.currentTimeMillis()-startTime<10 && !Client.keyboardInput.ready());
+		if(Client.keyboardInput.ready()) {
+			String str = Client.keyboardInput.readLine();
+			return str;
+		}else {
+			return null;
+		}
+
+		
 	}
 	
 	public static Socket getSocket() {
@@ -61,7 +70,7 @@ public class Client {
 
 		MainApp.getCommunicationService().normalStop = true;
 		MainApp.getCommunicationService().stopConnexion();
-		MainApp.getConsoleController().addText("Déconnexion du serveur réussi");
+		MainApp.getConsoleController().addInfo("Déconnexion du serveur réussi");
 	}
 	
 	public static String ecouterServeur() throws IOException{
