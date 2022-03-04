@@ -107,8 +107,8 @@ public class MainApp extends Application {
         if(MainApp.cs == null){
             MainApp.cs = new CommunicationService(hote,port);
             MainApp.cs.start();
-            //
         }else {
+            System.out.println(MainApp.cs.isConnected() + " "+MainApp.cs.isRunning());
             if (MainApp.cs.isConnected() || MainApp.cs.isRunning()){
                 MainApp.cc.addError("Une connexion est déjà en cours");
             }else{

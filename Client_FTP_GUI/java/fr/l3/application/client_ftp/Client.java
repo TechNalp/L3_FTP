@@ -58,6 +58,8 @@ public class Client {
 	}
 	
 	public static void deconnexionServeur(){
+
+		MainApp.getCommunicationService().normalStop = true;
 		MainApp.getCommunicationService().stopConnexion();
 		MainApp.getConsoleController().addText("Déconnexion du serveur réussi");
 	}

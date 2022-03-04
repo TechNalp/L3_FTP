@@ -47,59 +47,13 @@ public class CommunicationService extends Service<Void> {
     private String lastCmd ="";
     private String lastRep ="";
 
+    public boolean normalStop = false; // Indique si la demande de deconnexion est voulu ou non
+
     public CommunicationService(String hote, int port) {
         this.hote = hote;
         this.port = port;
         this.lastCmd = "";
         this.lastRep = "";
-        if (this.thEcoute == null) {
-            this.thEcoute = new Thread(() -> {
-                while(!Thread.currentThread().isInterrupted()) {
-                    try {
-                        CommunicationService.this.lastRep = Client.ecouterServeur();
-                        if(Thread.currentThread().isInterrupted()){
-                            return;
-                        }
-                    }catch (IOException e){
-                        MainApp.getCommunicationService().stopConnexion();
-                        if(!(e instanceof SocketException)){
-                            MainApp.getConsoleController().addError("Erreur écoute serveur");
-                        }
-                        return;
-                    }
-
-                    if(CommunicationService.this.lastRep.startsWith("0") || CommunicationService.this.lastRep.startsWith("1")){
-                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep.substring(2));
-                    }else if(CommunicationService.this.lastRep.startsWith("2")){
-                        MainApp.getConsoleController().addError(CommunicationService.this.lastRep.substring(2));
-                    }else{
-                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
-                    }
-                }
-            });
-
-        }
-
-        if(this.thEnvoi == null){
-            this.thEnvoi = new Thread(()->{
-                while(!Thread.currentThread().isInterrupted()){
-                    try {
-                        this.lastCmd = Client.lireClavier();
-                        if(Thread.currentThread().isInterrupted()){
-                            return;
-                        }
-                        Client.envoyerCommande(this.lastCmd);
-
-                        Client.analyseCmdSend(CommunicationService.this.lastCmd, CommunicationService.this.lastRep);
-
-                    } catch (IOException e) {
-                        MainApp.getCommunicationService().stopConnexion();
-                        MainApp.getConsoleController().addError("Erreur lecture entrée clavier / envoie commande");
-                        return;
-                    }
-                }
-            });
-        }
     }
 
     public void stopConnexion(){
@@ -113,6 +67,7 @@ public class CommunicationService extends Service<Void> {
             }
         }
         this.connected = false;
+        System.out.println("##### "+this.connected +" "+CommunicationService.this.connected +" " + MainApp.getCommunicationService().connected +" "  +MainApp.getCommunicationService().isConnected() );
         Platform.runLater(this::cancel);
 
     }
@@ -123,9 +78,10 @@ public class CommunicationService extends Service<Void> {
 
             @Override
             protected Void call() {
-                try {
-                    System.in.readNBytes(System.in.available());
-                } catch (IOException e) {}
+                CommunicationService.this.normalStop = false;
+                /*try {
+                    System.out.println(System.in.readNBytes(System.in.available()));
+                } catch (IOException e) {System.out.println("errrrrrreeeeeeeeeuuuuuurrrrr");}*/
                 MainApp.getConsoleController().addText("Tentative de résolution de l'hôte");
                 CommunicationService.this.addressFound=false;
                     Thread th = new Thread(){
@@ -177,8 +133,60 @@ public class CommunicationService extends Service<Void> {
                     }
 
                     if(CommunicationService.this.connected){
+
+                        CommunicationService.this.lastCmd = "";
+                        CommunicationService.this.lastRep = "";
+                        CommunicationService.this.thEcoute = new Thread(() -> {
+                            while(!Thread.currentThread().isInterrupted()) {
+                                try {
+                                    CommunicationService.this.lastRep = Client.ecouterServeur();
+                                    if(Thread.currentThread().isInterrupted()){
+                                        return;
+                                    }
+                                }catch (IOException e){
+
+                                    if(!CommunicationService.this.normalStop){
+                                        MainApp.getConsoleController().addError("Serveur deconnecté");
+                                        MainApp.getCommunicationService().stopConnexion();
+                                    }
+                                    return;
+                                }
+
+                                if(CommunicationService.this.lastRep.startsWith("0") || CommunicationService.this.lastRep.startsWith("1")){
+                                    MainApp.getConsoleController().addText(CommunicationService.this.lastRep.substring(2));
+                                }else if(CommunicationService.this.lastRep.startsWith("2")){
+                                    MainApp.getConsoleController().addError(CommunicationService.this.lastRep.substring(2));
+                                }else{
+                                    MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
+                                }
+                            }
+                        });
+
+
+                        CommunicationService.this.thEnvoi = new Thread(()->{
+                            while(!Thread.currentThread().isInterrupted()){
+                                try {
+                                    CommunicationService.this.lastCmd = Client.lireClavier();
+                                    if(Thread.currentThread().isInterrupted()){
+                                        return;
+                                    }
+                                    Client.envoyerCommande( CommunicationService.this.lastCmd);
+
+                                    Client.analyseCmdSend(CommunicationService.this.lastCmd, CommunicationService.this.lastRep);
+
+                                } catch (IOException e) {
+                                    MainApp.getCommunicationService().stopConnexion();
+                                    MainApp.getConsoleController().addError("Erreur lecture entrée clavier / envoie commande");
+                                    return;
+                                }
+                            }
+                        });
+
+
                         MainApp.getCommunicationService().thEcoute.start();
                         MainApp.getCommunicationService().thEnvoi.start();
+                    }else{
+                        MainApp.getCommunicationService().stopConnexion();
                     }
 
                     String cmd = "";
