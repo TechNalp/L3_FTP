@@ -31,44 +31,37 @@ public class ConnexionController implements Initializable {
     @FXML
     PasswordField passwordField;
 
-    public void stopConnexion(){
-        MainApp.setCommunicationService(null);
+    public String[] getConnectionIds(){
+        String[] ids = {usernameField.getText().substring(0,usernameField.getText().length()),passwordField.getText().substring(0,passwordField.getText().length())};
+        return ids;
     }
 
     public void startConnexion(){
-        boolean canConnect = false;
+        int canConnect = 0;
 
         String errorText = "";
 
         if(hoteField.getText().isBlank()){
             errorText += "- nom d'hôte\n";
-            canConnect = false;
-        }else{
-            canConnect = true;
+            canConnect++;
         }
 
         if(usernameField.getText().isBlank()){
             errorText += "- nom d'utilisateur\n";
-            canConnect = false;
-        }else{
-            canConnect = true;
+            canConnect++;
         }
 
         if(passwordField.getText().isBlank()){
             errorText += "- mot de passe\n";
-            canConnect = false;
-        }else{
-            canConnect = true;
+            canConnect++;
         }
 
         if(portField.getText().isBlank()){
             errorText += "- port du serveur\n";
-            canConnect = false;
-        }else{
-            canConnect = true;
+            canConnect++;
         }
 
-        if(!canConnect){
+        if(canConnect>0){
            Alert alert = new Alert(Alert.AlertType.WARNING);
            MainApp.getConsoleController().addError("Connexion Impossible");
            alert.setTitle("Connexion Impossible");

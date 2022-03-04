@@ -107,14 +107,14 @@ public class CommunicationService extends Service<Void> {
                     th.join(2000);
                 } catch (InterruptedException e) {
                     MainApp.getConsoleController().addError("Hôte introuvable");
-                    MainApp.getConnexionController().stopConnexion();
+                    MainApp.getCommunicationService().stopConnexion();
                     return null;
                 }
 
                 if(!CommunicationService.this.addressFound){
                     th.interrupt();
                     MainApp.getConsoleController().addError("Hôte introuvable");
-                    MainApp.getConnexionController().stopConnexion();
+                    MainApp.getCommunicationService().stopConnexion();
                     return null;
                 }
 
@@ -138,8 +138,18 @@ public class CommunicationService extends Service<Void> {
                             while(!Thread.currentThread().isInterrupted()) {
                                 try {
                                     CommunicationService.this.lastRep = Client.ecouterServeur();
+                                    if(CommunicationService.this.lastRep==null){
+                                        throw new IOException("Fin du stream serveur atteint");
+                                    }
                                     if(Thread.currentThread().isInterrupted()){
                                         return;
+                                    }
+                                    if(CommunicationService.this.lastRep.startsWith("0") || CommunicationService.this.lastRep.startsWith("1")){
+                                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep.substring(2));
+                                    }else if(CommunicationService.this.lastRep.startsWith("2")){
+                                        MainApp.getConsoleController().addError(CommunicationService.this.lastRep.substring(2));
+                                    }else{
+                                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
                                     }
                                 }catch (IOException e){
 
@@ -150,13 +160,7 @@ public class CommunicationService extends Service<Void> {
                                     return;
                                 }
 
-                                if(CommunicationService.this.lastRep.startsWith("0") || CommunicationService.this.lastRep.startsWith("1")){
-                                    MainApp.getConsoleController().addText(CommunicationService.this.lastRep.substring(2));
-                                }else if(CommunicationService.this.lastRep.startsWith("2")){
-                                    MainApp.getConsoleController().addError(CommunicationService.this.lastRep.substring(2));
-                                }else{
-                                    MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
-                                }
+
                             }
                         },"Ecoute");
 

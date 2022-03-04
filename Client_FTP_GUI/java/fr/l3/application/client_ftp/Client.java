@@ -55,7 +55,7 @@ public class Client {
 			}
 		} catch (IOException e){
 			MainApp.getConsoleController().addError("Impossible de se connecter à l'adresse : "+hostname+":"+port);
-			MainApp.getConnexionController().stopConnexion();
+			MainApp.getCommunicationService().stopConnexion();
 			return false;
 		}
 
