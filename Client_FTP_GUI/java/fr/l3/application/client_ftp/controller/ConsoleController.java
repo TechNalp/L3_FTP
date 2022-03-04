@@ -38,6 +38,13 @@ public class ConsoleController implements Initializable {
         ((Text)this.textFlow.getChildren().get(ConsoleController.lineNumber-1)).setFill(Color.RED);});
     }
 
+    public void addInfo(String info){
+        this.addText(info);
+        Platform.runLater(()->{
+            ((Text)this.textFlow.getChildren().get(ConsoleController.lineNumber-1)).setFill(Color.BLUEVIOLET);});
+    }
+
+
 
     public synchronized void addText(String text){
         Platform.runLater(()->{

@@ -1,6 +1,7 @@
 package fr.l3.application.client_ftp.service;
 
 import fr.l3.application.client_ftp.*;
+import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
@@ -12,14 +13,107 @@ import java.util.concurrent.TimeoutException;
 
 public class CommunicationService extends Service<Void> {
 
+
     private String hote;
+
+    public String getHote() {
+        return hote;
+    }
+
+    public void setHote(String hote) {
+        this.hote = hote;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     private int port;
     private  boolean addressFound = false;
+
+    public boolean isConnected() {
+        return connected;
+    }
+
     private boolean connected = false; //Indique si on est actuellent connecté à un serveur
+
+    private Thread thEcoute = null;
+    private Thread thEnvoi = null;
+
+    private String lastCmd ="";
+    private String lastRep ="";
 
     public CommunicationService(String hote, int port) {
         this.hote = hote;
-        this.port=port;
+        this.port = port;
+        this.lastCmd = "";
+        this.lastRep = "";
+        if (this.thEcoute == null) {
+            this.thEcoute = new Thread(() -> {
+                while(!Thread.currentThread().isInterrupted()) {
+                    try {
+                        CommunicationService.this.lastRep = Client.ecouterServeur();
+                        if(Thread.currentThread().isInterrupted()){
+                            return;
+                        }
+                    }catch (IOException e){
+                        MainApp.getCommunicationService().stopConnexion();
+                        if(!(e instanceof SocketException)){
+                            MainApp.getConsoleController().addError("Erreur écoute serveur");
+                        }
+                        return;
+                    }
+
+                    if(CommunicationService.this.lastRep.startsWith("0") || CommunicationService.this.lastRep.startsWith("1")){
+                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep.substring(2));
+                    }else if(CommunicationService.this.lastRep.startsWith("2")){
+                        MainApp.getConsoleController().addError(CommunicationService.this.lastRep.substring(2));
+                    }else{
+                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
+                    }
+                }
+            });
+
+        }
+
+        if(this.thEnvoi == null){
+            this.thEnvoi = new Thread(()->{
+                while(!Thread.currentThread().isInterrupted()){
+                    try {
+                        this.lastCmd = Client.lireClavier();
+                        if(Thread.currentThread().isInterrupted()){
+                            return;
+                        }
+                        Client.envoyerCommande(this.lastCmd);
+
+                        Client.analyseCmdSend(CommunicationService.this.lastCmd, CommunicationService.this.lastRep);
+
+                    } catch (IOException e) {
+                        MainApp.getCommunicationService().stopConnexion();
+                        MainApp.getConsoleController().addError("Erreur lecture entrée clavier / envoie commande");
+                        return;
+                    }
+                }
+            });
+        }
+    }
+
+    public void stopConnexion(){
+        if(this.connected){
+            MainApp.getCommunicationService().thEcoute.interrupt();
+            MainApp.getCommunicationService().thEcoute.interrupt();
+            try {
+                Client.getSocket().close();
+            }catch (IOException e){
+                MainApp.getConsoleController().addError("Erreur lors de la fermeture de la connexion");
+            }
+        }
+        this.connected = false;
+        Platform.runLater(this::cancel);
 
     }
 
@@ -28,7 +122,10 @@ public class CommunicationService extends Service<Void> {
         return new Task<Void>(){
 
             @Override
-            protected Void call() throws UnknownHostException {
+            protected Void call() {
+                try {
+                    System.in.readNBytes(System.in.available());
+                } catch (IOException e) {}
                 MainApp.getConsoleController().addText("Tentative de résolution de l'hôte");
                 CommunicationService.this.addressFound=false;
                     Thread th = new Thread(){
@@ -36,16 +133,17 @@ public class CommunicationService extends Service<Void> {
                         public void run(){
                             try {
                                 if(Thread.currentThread().isInterrupted()){
+                                    CommunicationService.this.stopConnexion();
                                     return;
                                 }
                                 CommunicationService.this.hote = InetAddress.getByName(CommunicationService.this.hote).getHostAddress();
                                 CommunicationService.this.addressFound = true;
                             } catch (UnknownHostException e) {
                                 if(Thread.currentThread().isInterrupted()){
+                                    CommunicationService.this.stopConnexion();
                                     return;
                                 }
                                 CommunicationService.this.addressFound = false;
-                                return;
                         }
                     }
 
@@ -75,15 +173,20 @@ public class CommunicationService extends Service<Void> {
                             CommunicationService.this.connected = true;
                         }
                     }catch (SocketException e){
-                        CommunicationService.this.connected = false;
                         throw e;
+                    }
+
+                    if(CommunicationService.this.connected){
+                        MainApp.getCommunicationService().thEcoute.start();
+                        MainApp.getCommunicationService().thEnvoi.start();
                     }
 
                     String cmd = "";
 
                     String rep_serveur = "";
 
-                    while (true) {
+
+                    /*while (true) {
 
                         do {
                             rep_serveur = Client.ecouterServeur();
@@ -104,13 +207,15 @@ public class CommunicationService extends Service<Void> {
 
                         Client.envoyerCommande(cmd);
 
-                    }
+                    }*/
+
+
                 }catch (SocketException e){
                     if(CommunicationService.this.connected) {
                         MainApp.getConsoleController().addError("Le Serveur s'est déconnecté");
                         CommunicationService.this.connected = false;
                     }
-                    MainApp.getConnexionController().stopConnexion();
+                    MainApp.getCommunicationService().stopConnexion();
                     return null;
                 } catch (IOException e){
                 }

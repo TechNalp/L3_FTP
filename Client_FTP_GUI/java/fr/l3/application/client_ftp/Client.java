@@ -57,9 +57,8 @@ public class Client {
 		return true;
 	}
 	
-	public static void deconnexionServeur() throws IOException {
-		Client.sck_cmd.close();
-		MainApp.getConnexionController().stopConnexion();
+	public static void deconnexionServeur(){
+		MainApp.getCommunicationService().stopConnexion();
 		MainApp.getConsoleController().addText("Déconnexion du serveur réussi");
 	}
 	
@@ -68,12 +67,10 @@ public class Client {
 	}
 
 	
-	public static void analyseCmdSend(String cmd, String rep_serv) throws UnknownHostException, IOException {
+	public static void analyseCmdSend(String cmd, String rep_serv) throws IOException {
 
 		if(cmd.toLowerCase().startsWith("bye")){
 			Client.deconnexionServeur();
-			MainApp.getConsoleController().addText("Déconnexion Réussi");
-			System.exit(0);
 		}
 
 		if(rep_serv.startsWith("2") || rep_serv.isBlank() || cmd.isBlank()) {
@@ -86,9 +83,10 @@ public class Client {
 
 			Client.envoieFichier(new File(cmd.split(" ")[1]).getCanonicalPath(),Integer.parseInt(rep_serv.split(" ")[1]));
 		}
+
 	}
-	
-	public static void receptionFichier(String fileName,int port) throws UnknownHostException, IOException {
+
+	public static void receptionFichier(String fileName,int port) {
 		Thread nt = new Thread(new FileTransfert(fileName,port,'R'));
 		nt.start();
 		
@@ -99,7 +97,7 @@ public class Client {
 		nt.start();
 	}
 	
-	public static void envoyerCommande(String cmd) throws SocketException{
+	public static void envoyerCommande(String cmd) {
 		ps.println(cmd);
 	}
 	

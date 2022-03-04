@@ -104,11 +104,19 @@ public class MainApp extends Application {
     }
 
     public static void startCommunicationService(String hote, int port){
-        if(MainApp.cs != null){
-            MainApp.cc.addText("Une connexion est déjà en cours");
-        }else {
+        if(MainApp.cs == null){
             MainApp.cs = new CommunicationService(hote,port);
             MainApp.cs.start();
+            //
+        }else {
+            if (MainApp.cs.isConnected() || MainApp.cs.isRunning()){
+                MainApp.cc.addError("Une connexion est déjà en cours");
+            }else{
+                MainApp.cs.setHote(hote);
+                MainApp.cs.setPort(port);
+                MainApp.cs.restart();
+            }
+
         }
     }
 
