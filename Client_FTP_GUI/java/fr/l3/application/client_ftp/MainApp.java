@@ -1,7 +1,7 @@
 package fr.l3.application.client_ftp;
 
-import fr.l3.application.client_ftp.controller.ConnexionController;
-import fr.l3.application.client_ftp.controller.ConsoleController;
+
+import fr.l3.application.client_ftp.controller.MainController;
 import fr.l3.application.client_ftp.service.CommunicationService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -21,41 +21,28 @@ public class MainApp extends Application {
 
     private static CommunicationService cs = null;
 
-    private static ConsoleController cc;
-    private static ConnexionController coc;
+    private static MainController cc;
 
     private static String username;
 
-    public static String getUsername(){
-        return MainApp.username;
-    }
 
-    public static void setUsername(String username){
-        MainApp.username = username;
-    }
-
-    public static ConsoleController getConsoleController(){
+    public static MainController getMainController(){
         return MainApp.cc;
     }
 
-    public static ConnexionController getConnexionController(){
-        return MainApp.coc;
-    }
 
     public static CommunicationService getCommunicationService(){
         return MainApp.cs;
     }
 
-    public static void setCommunicationService(CommunicationService cs){
-        MainApp.cs = cs;
-    }
 
     @Override
     public void start(Stage mainWindow) throws IOException {
         this.intitMainWindow(mainWindow);
         this.loadMainWindow();
-        this.loadConnexionButtons();
-        this.loadConsole();
+        //this.loadConnexionButtons();
+        //this.loadConsole();
+        MainApp.getMainController().addText("test");
         this.mainWindow.show();
     }
 
@@ -66,7 +53,7 @@ public class MainApp extends Application {
         this.mainWindow.setHeight(600);
         this.mainWindow.setMinHeight(550);
         this.mainWindow.setMinWidth(700);
-        this.mainWindow.getIcons().add(new Image("file:icone.png"));
+        this.mainWindow.getIcons().add(new Image(MainApp.class.getResource("icone.png").toString()));
     }
 
 
@@ -74,33 +61,14 @@ public class MainApp extends Application {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(MainApp.class.getResource("view/mainView.fxml"));
         this.rootLayout = (Pane) loader.load();
-        //((MenuBar)((AnchorPane)this.rootLayout.getChildren().get(0)).getChildren().get(0)).getMenus().get(0).getItems().get(0).setOnAction((ActionEvent t) -> {new CommunicationService().start();});
+        ScrollPane sp = (ScrollPane) this.rootLayout.lookup("#consoleScrollPan");
+        sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        MainApp.cc = loader.getController();
         Scene scene = new Scene(this.rootLayout);
         this.mainWindow.setScene(scene);
     }
-
-    //public void
-
-    private void loadConsole() throws IOException{
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(MainApp.class.getResource("view/console.fxml"));
-        AnchorPane ap = (AnchorPane) loader.load();
-        this.rootLayout.getChildren().add(ap);
-        ScrollPane sp = (ScrollPane)ap.getChildren().get(0);
-        sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        ConsoleController.setScrollpan(sp);
-        MainApp.cc = loader.getController();
-        MainApp.cc.addText("Console Initialisé");
-    }
-
-    private void loadConnexionButtons() throws IOException{
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(MainApp.class.getResource("view/connexionButtons.fxml"));
-        AnchorPane ap = (AnchorPane) loader.load();
-        ((AnchorPane)this.rootLayout.getChildren().get(0)).getChildren().add(ap);
-        MainApp.coc = loader.getController();
-    }
+    
 
     public static void startCommunicationService(String hote, int port){
         if(MainApp.cs == null){

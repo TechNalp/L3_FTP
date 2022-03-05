@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeoutException;
 
 public class CommunicationService extends Service<Void> {
 
@@ -64,7 +63,7 @@ public class CommunicationService extends Service<Void> {
             try {
                 Client.getSocket().close();
             }catch (IOException e){
-                MainApp.getConsoleController().addError("Erreur lors de la fermeture de la connexion");
+                MainApp.getMainController().addError("Erreur lors de la fermeture de la connexion");
             }
         }
         this.connected = false;
@@ -80,7 +79,7 @@ public class CommunicationService extends Service<Void> {
             protected Void call() {
                 CommunicationService.this.normalStop = false;
               
-                MainApp.getConsoleController().addText("Tentative de résolution de l'hôte");
+                MainApp.getMainController().addText("Tentative de résolution de l'hôte");
                 CommunicationService.this.addressFound=false;
                     Thread th = new Thread("Verification Hote"){
                         @Override
@@ -106,20 +105,20 @@ public class CommunicationService extends Service<Void> {
                 try {
                     th.join(2000);
                 } catch (InterruptedException e) {
-                    MainApp.getConsoleController().addError("Hôte introuvable");
+                    MainApp.getMainController().addError("Hôte introuvable");
                     MainApp.getCommunicationService().stopConnexion();
                     return null;
                 }
 
                 if(!CommunicationService.this.addressFound){
                     th.interrupt();
-                    MainApp.getConsoleController().addError("Hôte introuvable");
+                    MainApp.getMainController().addError("Hôte introuvable");
                     MainApp.getCommunicationService().stopConnexion();
                     return null;
                 }
 
                 try {
-                    MainApp.getConsoleController().addText("Adresse ip trouvée : "+CommunicationService.this.hote);
+                    MainApp.getMainController().addText("Adresse ip trouvée : "+CommunicationService.this.hote);
                     try {
                         if(!Client.connexionServeur(CommunicationService.this.hote, CommunicationService.this.port)){
                             CommunicationService.this.connected = false;
@@ -145,16 +144,16 @@ public class CommunicationService extends Service<Void> {
                                         return;
                                     }
                                     if(CommunicationService.this.lastRep.startsWith("0") || CommunicationService.this.lastRep.startsWith("1")){
-                                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep.substring(2));
+                                        MainApp.getMainController().addText(CommunicationService.this.lastRep.substring(2));
                                     }else if(CommunicationService.this.lastRep.startsWith("2")){
-                                        MainApp.getConsoleController().addError(CommunicationService.this.lastRep.substring(2));
+                                        MainApp.getMainController().addError(CommunicationService.this.lastRep.substring(2));
                                     }else{
-                                        MainApp.getConsoleController().addText(CommunicationService.this.lastRep);
+                                        MainApp.getMainController().addText(CommunicationService.this.lastRep);
                                     }
                                 }catch (IOException e){
 
                                     if(!CommunicationService.this.normalStop){
-                                        MainApp.getConsoleController().addError("Serveur deconnecté");
+                                        MainApp.getMainController().addError("Serveur deconnecté");
                                         MainApp.getCommunicationService().stopConnexion();
                                     }
                                     return;
@@ -187,7 +186,7 @@ public class CommunicationService extends Service<Void> {
 
                                 } catch (IOException e) {
                                     MainApp.getCommunicationService().stopConnexion();
-                                    MainApp.getConsoleController().addError("Erreur lecture entrée clavier / envoie commande");
+                                    MainApp.getMainController().addError("Erreur lecture entrée clavier / envoie commande");
                                     return;
                                 }
                             }
@@ -231,7 +230,7 @@ public class CommunicationService extends Service<Void> {
 
                 }catch (SocketException e){
                     if(CommunicationService.this.connected) {
-                        MainApp.getConsoleController().addError("Le Serveur s'est déconnecté");
+                        MainApp.getMainController().addError("Le Serveur s'est déconnecté");
                         CommunicationService.this.connected = false;
                     }
                     MainApp.getCommunicationService().stopConnexion();

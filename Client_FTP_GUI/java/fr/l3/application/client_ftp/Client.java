@@ -1,12 +1,7 @@
 package fr.l3.application.client_ftp;
 
-import fr.l3.application.client_ftp.controller.ConnexionController;
-import fr.l3.application.client_ftp.service.CommunicationService;
-
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.*;
-import java.util.concurrent.TimeoutException;
 
 
 public class Client {
@@ -37,7 +32,7 @@ public class Client {
 	
 
 	private static boolean verifConnexion() throws IOException {
-		MainApp.getConsoleController().addText("Verification de la connexion");
+		MainApp.getMainController().addText("Verification de la connexion");
 		Client.sck_cmd.setSoTimeout(2000);
 		int connexionVerif;
 		connexionVerif = Client.sck_cmd.getInputStream().read();
@@ -54,7 +49,7 @@ public class Client {
 				return false;
 			}
 		} catch (IOException e){
-			MainApp.getConsoleController().addError("Impossible de se connecter à l'adresse : "+hostname+":"+port);
+			MainApp.getMainController().addError("Impossible de se connecter à l'adresse : "+hostname+":"+port);
 			MainApp.getCommunicationService().stopConnexion();
 			return false;
 		}
@@ -63,6 +58,58 @@ public class Client {
 		Client.ps = new PrintStream(Client.sck_cmd.getOutputStream());
 		Client.hostname = hostname;
 		Client.port = port;
+
+		// Envoie des identifiants de connexion
+
+		String[] ids = MainApp.getMainController().getConnectionIds();
+		String rep;
+		do {
+			rep=Client.ecouterServeur();
+			if(rep.startsWith("0") || rep.startsWith("1")){
+				MainApp.getMainController().addText(rep.substring(2));
+			}else if(rep.startsWith("2")){
+				MainApp.getMainController().addError(rep.substring(2));
+				MainApp.getCommunicationService().stopConnexion();
+				return false;
+			}else{
+				MainApp.getMainController().addText(rep);
+			}
+		}while(!rep.startsWith("0"));
+
+		Client.envoyerCommande("user "+ids[0]);
+
+		rep = Client.ecouterServeur();
+		if(rep.startsWith("2")){
+			MainApp.getMainController().addError("Nom d'utilisateur incorrecte");
+			MainApp.getMainController().addError("Arrêt de la connexion");
+			MainApp.getCommunicationService().stopConnexion();
+			return false;
+		}
+			MainApp.getMainController().addInfo("Nom d'utilisateur OK");
+
+			Client.envoyerCommande("pass "+ids[1]);
+
+		if(Client.ecouterServeur().startsWith("2")){
+			MainApp.getMainController().addError("Mot de passe erronée");
+			MainApp.getMainController().addError("Arrêt de la connexion");
+			MainApp.getCommunicationService().stopConnexion();
+			return false;
+		}
+
+		do {
+			rep=Client.ecouterServeur();
+			if(rep.startsWith("0") || rep.startsWith("1")){
+				MainApp.getMainController().addText(rep.substring(2));
+			}else if(rep.startsWith("2")){
+				MainApp.getMainController().addError(rep.substring(2));
+				MainApp.getCommunicationService().stopConnexion();
+				return false;
+			}else{
+				MainApp.getMainController().addText(rep);
+			}
+		}while(!rep.startsWith("0"));
+
+
 		return true;
 	}
 	
@@ -70,7 +117,7 @@ public class Client {
 
 		MainApp.getCommunicationService().normalStop = true;
 		MainApp.getCommunicationService().stopConnexion();
-		MainApp.getConsoleController().addInfo("Déconnexion du serveur réussi");
+		MainApp.getMainController().addInfo("Déconnexion du serveur réussi");
 	}
 	
 	public static String ecouterServeur() throws IOException{
