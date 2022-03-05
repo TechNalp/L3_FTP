@@ -44,6 +44,11 @@ public class CommunicationService extends Service<Void> {
     private Thread thEnvoi = null;
 
     private String lastCmd ="";
+
+    public String getLastRep() {
+        return lastRep;
+    }
+
     private String lastRep ="";
 
     public boolean normalStop = false; // Indique si la demande de deconnexion est voulu ou non
@@ -78,7 +83,12 @@ public class CommunicationService extends Service<Void> {
             @Override
             protected Void call() {
                 CommunicationService.this.normalStop = false;
-              
+
+                try {
+                    System.in.readNBytes(System.in.available());
+                } catch (IOException e) {
+                }
+
                 MainApp.getMainController().addText("Tentative de résolution de l'hôte");
                 CommunicationService.this.addressFound=false;
                     Thread th = new Thread("Verification Hote"){

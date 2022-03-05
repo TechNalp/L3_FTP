@@ -40,9 +40,6 @@ public class MainApp extends Application {
     public void start(Stage mainWindow) throws IOException {
         this.intitMainWindow(mainWindow);
         this.loadMainWindow();
-        //this.loadConnexionButtons();
-        //this.loadConsole();
-        MainApp.getMainController().addText("test");
         this.mainWindow.show();
     }
 
@@ -68,7 +65,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(this.rootLayout);
         this.mainWindow.setScene(scene);
     }
-    
+
 
     public static void startCommunicationService(String hote, int port){
         if(MainApp.cs == null){

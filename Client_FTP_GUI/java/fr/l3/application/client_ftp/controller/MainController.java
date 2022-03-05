@@ -49,9 +49,18 @@ public class MainController implements Initializable{
     ScrollPane consoleScrollPan;
 
 
-
-
     //********** Console ***********//
+
+    //********** arbreFichier Serveur ***********//
+
+    @FXML
+    TreeView treeServer;
+
+    @FXML
+    Label   treeServerLabel;
+
+    //********** arbreFichier Serveur ***********//
+
 
 
     //------------ CONSOLE CONTROL --------//
@@ -145,9 +154,12 @@ public class MainController implements Initializable{
 
     }
 
-
-
     //------------ CONNEXION_BUTTONS CONTROL --------//
+
+
+    //------------ ARRBRE_SERVEUR CONTROL --------//
+
+    //------------ ARRBRE_SERVEUR CONTROL --------//
 
     @FXML
     @Override

@@ -2,6 +2,7 @@ package fr.l3.application.client_ftp;
 
 import java.io.*;
 import java.net.*;
+import java.util.Locale;
 
 
 public class Client {
@@ -135,10 +136,13 @@ public class Client {
 			return;
 		}
 		if(cmd.toLowerCase().startsWith("get")){
+			while(!rep_serv.toLowerCase(Locale.ROOT).contains("port transfert fichier")){
+				rep_serv = MainApp.getCommunicationService().getLastRep();
+			}
 			Client.receptionFichier(new File(cmd.split(" ")[1]).getName(), Integer.parseInt(rep_serv.split(" ")[1]));
 			
 		}else if(cmd.toLowerCase().startsWith("stor")){
-
+			while(rep_serv.toLowerCase(Locale.ROOT).contains("port transfert fichier"));
 			Client.envoieFichier(new File(cmd.split(" ")[1]).getCanonicalPath(),Integer.parseInt(rep_serv.split(" ")[1]));
 		}
 

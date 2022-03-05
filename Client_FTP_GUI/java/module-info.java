@@ -1,6 +1,7 @@
 module fr.l3.application.client_ftp_gui {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.desktop;
 
 
     opens fr.l3.application.client_ftp to javafx.fxml;
