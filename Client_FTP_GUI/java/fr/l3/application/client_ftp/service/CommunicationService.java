@@ -49,6 +49,10 @@ public class CommunicationService extends Service<Void> {
         return lastRep;
     }
 
+    public void setLastRep(String lastRep) {
+        this.lastRep = lastRep;
+    }
+
     private String lastRep ="";
 
     public boolean normalStop = false; // Indique si la demande de deconnexion est voulu ou non
@@ -161,7 +165,6 @@ public class CommunicationService extends Service<Void> {
                                         MainApp.getMainController().addText(CommunicationService.this.lastRep);
                                     }
                                 }catch (IOException e){
-
                                     if(!CommunicationService.this.normalStop){
                                         MainApp.getMainController().addError("Serveur deconnecté");
                                         MainApp.getCommunicationService().stopConnexion();
@@ -178,8 +181,11 @@ public class CommunicationService extends Service<Void> {
                         	String temp = "";
                             while(!Thread.currentThread().isInterrupted()){
                                 try {
-                                	
+
                                     temp = Client.lireClavier();
+                                    if(temp != null){
+                                        System.out.println(temp);
+                                    }
                                     
                                     if(Thread.currentThread().isInterrupted()){
                                         return;
@@ -190,9 +196,11 @@ public class CommunicationService extends Service<Void> {
                                     }else {
                                     	CommunicationService.this.lastCmd = temp;
                                     }
-                                    Client.envoyerCommande( CommunicationService.this.lastCmd);
+                                    Client.envoyerCommande(CommunicationService.this.lastCmd);
 
                                     Client.analyseCmdSend(CommunicationService.this.lastCmd, CommunicationService.this.lastRep);
+                                    CommunicationService.this.lastRep="";
+                                    CommunicationService.this.lastCmd="";
 
                                 } catch (IOException e) {
                                     MainApp.getCommunicationService().stopConnexion();

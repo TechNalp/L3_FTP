@@ -132,30 +132,34 @@ public class Client {
 			Client.deconnexionServeur();
 		}
 
-		if(rep_serv.startsWith("2") || rep_serv.isBlank() || cmd.isBlank()) {
+		if(rep_serv.startsWith("2")) {
 			return;
 		}
 		if(cmd.toLowerCase().startsWith("get")){
-			while(!rep_serv.toLowerCase(Locale.ROOT).contains("port transfert fichier")){
+			while(!rep_serv.toLowerCase().contains("port transfert fichier")){
+				if(rep_serv.startsWith("2")){
+					return;
+				}
 				rep_serv = MainApp.getCommunicationService().getLastRep();
 			}
 			Client.receptionFichier(new File(cmd.split(" ")[1]).getName(), Integer.parseInt(rep_serv.split(" ")[1]));
 			
 		}else if(cmd.toLowerCase().startsWith("stor")){
-			while(rep_serv.toLowerCase(Locale.ROOT).contains("port transfert fichier"));
+			while(rep_serv.toLowerCase().contains("port transfert fichier"));
 			Client.envoieFichier(new File(cmd.split(" ")[1]).getCanonicalPath(),Integer.parseInt(rep_serv.split(" ")[1]));
 		}
+		MainApp.getCommunicationService().setLastRep("");
 
 	}
 
 	public static void receptionFichier(String fileName,int port) {
-		Thread nt = new Thread(new FileTransfert(fileName,port,'R'));
+		Thread nt = new Thread(new FileTransfert(fileName,port,'R'),"Reception Fichier");
 		nt.start();
 		
 	}
 
 	public static void envoieFichier(String fileName,int port){
-		Thread nt = new Thread(new FileTransfert(fileName,port,'E'));
+		Thread nt = new Thread(new FileTransfert(fileName,port,'E'),"Envoi Fichier");
 		nt.start();
 	}
 	

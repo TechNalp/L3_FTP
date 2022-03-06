@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server implements Runnable{
-
+    private static int numberOfClient = 0;
+    public int clientNumber;
     Socket sck;
     BufferedReader br;
     PrintStream ps;
@@ -18,6 +19,7 @@ public class Server implements Runnable{
     static volatile List<Integer> availablePort = new ArrayList<>();
 
     public Server(Socket sck){
+        this.clientNumber = Server.numberOfClient++;
         this.sck = sck;
         try {
             this.CWD = new File(".").getCanonicalPath();
@@ -27,6 +29,7 @@ public class Server implements Runnable{
     }
 
     public void run(){
+        Thread.currentThread().setName("Serveur client : "+this.clientNumber);
         try {
             try {
                 int verifNumber = 103; // Si le client nous renvoie ce nombre incrémenté de 48, on est sûr qu'il s'agit d'un client compatible

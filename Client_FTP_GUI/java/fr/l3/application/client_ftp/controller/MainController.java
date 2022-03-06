@@ -157,9 +157,9 @@ public class MainController implements Initializable{
     //------------ CONNEXION_BUTTONS CONTROL --------//
 
 
-    //------------ ARRBRE_SERVEUR CONTROL --------//
+    //------------ ARBRE_SERVEUR CONTROL --------//
 
-    //------------ ARRBRE_SERVEUR CONTROL --------//
+    //------------ ARBRE_SERVEUR CONTROL --------//
 
     @FXML
     @Override

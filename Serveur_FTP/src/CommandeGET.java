@@ -15,6 +15,7 @@ public class CommandeGET extends Commande {
 
 	public void execute() {
 			String filePath = "";
+			System.out.println("Ok");
 			if(commandeArgs.length == 0) {
 				ps.println("2 Veuillez choisir le fichier à recevoir");
 			}else {
@@ -31,11 +32,11 @@ public class CommandeGET extends Commande {
 							return;
 						}
 					}
-				} catch (IOException e) {}
+				} catch (IOException e) {e.printStackTrace();}
 				
 				
 			}
-				Thread nt = new Thread(new FileTransfert(filePath, 'E', srv));
+				Thread nt = new Thread(new FileTransfert(filePath, 'E', srv),"Envoi Fichier client : "+srv.clientNumber);
 				nt.start();
 	}
 

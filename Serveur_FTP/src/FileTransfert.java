@@ -20,11 +20,13 @@ public class FileTransfert implements Runnable{
 	
 	@Override
 	public void run() {
+		System.out.println("File transfert lancé");
 		try{
 			try {
 				synchronized (this){
 					for(this.port=Server.firstAvailablePort;Server.availablePort.contains(this.port);this.port++);
 					Server.availablePort.add(this.port);
+					System.out.println(Server.availablePort);
 				}
 				this.srv.ps.println("1 "+ this.port + " <- Port transfert fichier");
 				ServerSocket serv_sck = new ServerSocket(this.port);
@@ -43,7 +45,7 @@ public class FileTransfert implements Runnable{
 					this.srv.ps.println("1 Fichier à Recevoir : " + this.fileName);
 					is = new BufferedInputStream(new FileInputStream(this.fileName));
 					os = new BufferedOutputStream(sck.getOutputStream());
-					this.srv.ps.println("1 Début du transfert de fichier");
+					this.srv.ps.println("1 Début du transfert du fichier : "+this.fileName);
 					for(int oct = is.read();oct!=-1;oct = is.read()) {
 						if(Thread.currentThread().isInterrupted()){
 							synchronized (this){Server.availablePort.remove((Object)this.port);}
@@ -51,12 +53,12 @@ public class FileTransfert implements Runnable{
 							serv_sck.close();
 							is.close();
 							os.close();
-							System.out.println("[THREAD] Transfert interrompu");
+							System.out.println("[THREAD] Transfert interrompu pour le fichier : " + this.fileName);
 							return;
 						}
 						os.write(oct);
 					}
-					this.srv.ps.println("0 Fin du transfert de fichier");
+					this.srv.ps.println("0 Fin du transfert du fichier : "+this.fileName);
 					is.close();
 					os.close();
 
@@ -84,6 +86,7 @@ public class FileTransfert implements Runnable{
 				}
 				synchronized (this){
 					Server.availablePort.remove((Object)this.port);
+					System.out.println(Server.availablePort);
 				}
 				sck.close();
 				serv_sck.close();
@@ -93,7 +96,6 @@ public class FileTransfert implements Runnable{
 				System.out.println("[THREAD] Client déconnecté");
 				synchronized (this){
 					Server.availablePort.remove((Object)this.port);
-					System.out.println("ok : "+ Server.availablePort);
 				}
 				this.srv.sck.close();
 			}
