@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CommunicationService extends Service<Void> {
 
@@ -40,8 +42,8 @@ public class CommunicationService extends Service<Void> {
 
     private boolean connected = false; //Indique si on est actuellent connecté à un serveur
 
-    private Thread thEcoute = null;
-    private Thread thEnvoi = null;
+    public Thread thEcoute = null;
+    public Thread thEnvoi = null;
 
     private String lastCmd ="";
 
@@ -53,9 +55,11 @@ public class CommunicationService extends Service<Void> {
         this.lastRep = lastRep;
     }
 
-    private String lastRep ="";
+    private volatile String lastRep ="";
 
     public boolean normalStop = false; // Indique si la demande de deconnexion est voulu ou non
+
+    public volatile Set<Thread> fileTransfertThreadSet = new HashSet<Thread>();
 
     public CommunicationService(String hote, int port) {
         this.hote = hote;
@@ -75,6 +79,9 @@ public class CommunicationService extends Service<Void> {
                 MainApp.getMainController().addError("Erreur lors de la fermeture de la connexion");
             }
         }
+        //this.fileTransfertThreadSet.forEach();
+        this.lastRep = "";
+        this.lastCmd = "";
         this.connected = false;
         Platform.runLater(this::cancel);
 
@@ -151,6 +158,7 @@ public class CommunicationService extends Service<Void> {
                             while(!Thread.currentThread().isInterrupted()) {
                                 try {
                                     CommunicationService.this.lastRep = Client.ecouterServeur();
+
                                     if(CommunicationService.this.lastRep==null){
                                         throw new IOException("Fin du stream serveur atteint");
                                     }
@@ -164,12 +172,16 @@ public class CommunicationService extends Service<Void> {
                                     }else{
                                         MainApp.getMainController().addText(CommunicationService.this.lastRep);
                                     }
+                                    Client.analyseCmdSend(CommunicationService.this.lastCmd);
+                                    CommunicationService.this.lastCmd="";
                                 }catch (IOException e){
                                     if(!CommunicationService.this.normalStop){
                                         MainApp.getMainController().addError("Serveur deconnecté");
                                         MainApp.getCommunicationService().stopConnexion();
                                     }
                                     return;
+                                }catch (StringIndexOutOfBoundsException ex){
+                                    ex.printStackTrace();
                                 }
 
 
@@ -184,7 +196,7 @@ public class CommunicationService extends Service<Void> {
 
                                     temp = Client.lireClavier();
                                     if(temp != null){
-                                        System.out.println(temp);
+
                                     }
                                     
                                     if(Thread.currentThread().isInterrupted()){
@@ -198,9 +210,8 @@ public class CommunicationService extends Service<Void> {
                                     }
                                     Client.envoyerCommande(CommunicationService.this.lastCmd);
 
-                                    Client.analyseCmdSend(CommunicationService.this.lastCmd, CommunicationService.this.lastRep);
-                                    CommunicationService.this.lastRep="";
-                                    CommunicationService.this.lastCmd="";
+
+
 
                                 } catch (IOException e) {
                                     MainApp.getCommunicationService().stopConnexion();
@@ -220,30 +231,6 @@ public class CommunicationService extends Service<Void> {
                     String cmd = "";
 
                     String rep_serveur = "";
-
-
-                    /*while (true) {
-
-                        do {
-                            rep_serveur = Client.ecouterServeur();
-                            Client.analyseCmdSend(cmd, rep_serveur);
-                            if(rep_serveur.startsWith("0") || rep_serveur.startsWith("1")){
-                                MainApp.getConsoleController().addText(rep_serveur.substring(2));
-                            }else if(rep_serveur.startsWith("2")){
-                                MainApp.getConsoleController().addError(rep_serveur.substring(2));
-                            }else{
-                                MainApp.getConsoleController().addText(rep_serveur);
-                            }
-
-                            cmd = "";
-                        }
-                        while (!(rep_serveur.substring(0, 1).contains("0") || rep_serveur.substring(0, 1).contains("2")));
-
-                        cmd = Client.lireClavier();
-
-                        Client.envoyerCommande(cmd);
-
-                    }*/
 
 
                 }catch (SocketException e){

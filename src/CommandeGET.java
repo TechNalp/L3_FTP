@@ -29,6 +29,7 @@ public class CommandeGET extends Commande {
 							filePath = temp.getCanonicalPath();
 						}else {
 							ps.println("2 Aucun fichier avec ce nom");
+							System.out.println("2 Aucun fichier avec ce nom");
 							return;
 						}
 					}

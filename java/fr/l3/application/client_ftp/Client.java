@@ -126,23 +126,30 @@ public class Client {
 	}
 
 	
-	public static void analyseCmdSend(String cmd, String rep_serv) throws IOException {
-
+	public static void analyseCmdSend(String cmd) throws IOException {
+		String rep_serv = MainApp.getCommunicationService().getLastRep();
+		//System.out.println("Cmd : "+cmd+" / "+rep_serv);
 		if(cmd.toLowerCase().startsWith("bye")){
 			Client.deconnexionServeur();
+			//System.out.println("///////////////////////");
+			Thread.dumpStack();
 		}
 
-		if(rep_serv.startsWith("2")) {
-			return;
-		}
+
 		if(cmd.toLowerCase().startsWith("get")){
+			//System.out.println("get");
+			rep_serv = MainApp.getCommunicationService().getLastRep();
 			while(!rep_serv.toLowerCase().contains("port transfert fichier")){
+				rep_serv = MainApp.getCommunicationService().getLastRep();
+				//System.out.println("// "+rep_serv);
 				if(rep_serv.startsWith("2")){
 					return;
 				}
-				rep_serv = MainApp.getCommunicationService().getLastRep();
 			}
+			//System.out.println("get while out");
 			Client.receptionFichier(new File(cmd.split(" ")[1]).getName(), Integer.parseInt(rep_serv.split(" ")[1]));
+			//System.out.println("get reception lauch");
+			MainApp.getCommunicationService().setLastRep("");
 			
 		}else if(cmd.toLowerCase().startsWith("stor")){
 			while(rep_serv.toLowerCase().contains("port transfert fichier"));

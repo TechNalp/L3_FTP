@@ -1,5 +1,9 @@
 package fr.l3.application.client_ftp;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
@@ -7,6 +11,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 public class FileTransfert implements Runnable{
 
@@ -40,8 +45,8 @@ public class FileTransfert implements Runnable{
 
 
 			}else if(this.type=='R') {
-				if(new File(this.fileName).exists()){ //Gestion transfert de fichier interrompu
-					MainApp.getMainController().addInfo(this.fileName+" existe déjà, création d'une sauvegarde temporaire");
+				if(new File(this.fileName).exists()){ //Gestion transfert de fichier déjà existant
+					MainApp.getMainController().addInfo("création d'une sauvegarde temporaire pour : "+this.fileName);
 
 					this.tempFile=Files.createTempFile(Paths.get(this.fileName).getFileName().toString().split("\\.")[0],null);
 
@@ -54,7 +59,7 @@ public class FileTransfert implements Runnable{
 
 					is.close();
 					os.close();
-
+					MainApp.getMainController().addInfo("Sauvgarde temporaire effectué");
 				}
 				BufferedInputStream is = new BufferedInputStream(sck_file.getInputStream());
 				BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(this.fileName));
@@ -72,6 +77,7 @@ public class FileTransfert implements Runnable{
 				Files.delete(this.tempFile);
 			}
 		} catch (UnknownHostException e) {} catch (IOException e) {
+			//e.printStackTrace();
 			MainApp.getMainController().addError("Erreur lors du transfert du fichier : "+ this.fileName);
 			if(this.tempFile!=null){
 				MainApp.getMainController().addText("Tentative de restauration du fichier : "+ this.fileName);
@@ -84,6 +90,7 @@ public class FileTransfert implements Runnable{
 					}
 					is.close();
 					os.close();
+
 					MainApp.getMainController().addInfo("Restauration réussi pour : "+this.fileName);
 					Files.delete(this.tempFile);
 				} catch (IOException ex) {
@@ -96,6 +103,13 @@ public class FileTransfert implements Runnable{
 				}
 
 
+			}else{
+				MainApp.getMainController().addInfo("Suppresion de la partie de "+Paths.get(this.fileName).getFileName()+ "déjà téléchargé");
+				try {
+					Files.delete(Paths.get(this.fileName).getFileName());
+				} catch (IOException ex) {
+					MainApp.getMainController().addError("Impossible de supprimer "+Paths.get(this.fileName).getFileName());
+				}
 			}
 
 		}

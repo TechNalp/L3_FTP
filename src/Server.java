@@ -45,13 +45,18 @@ public class Server implements Runnable{
                 this.ps.println("0 Authentification : ");
 
                 String commande = "";
-
-                while (!(commande = this.br.readLine()).equals("bye")) {
-                    System.out.println("[THREAD] >> " + commande);
-                    CommandExecutor.executeCommande(ps, commande, this);
+                try {
+                    while (!(commande = this.br.readLine()).equals("bye")) {
+                        System.out.println("[THREAD] >> " + commande);
+                        CommandExecutor.executeCommande(ps, commande, this);
+                    }
+                }catch (NullPointerException e){
+                    System.out.println("\n[THREAD] Client déconnecté\n");
+                    this.sck.close();
+                    return;
                 }
-
                 System.out.println("\n[THREAD] Client déconnecté\n");
+
                 this.sck.close();
 
             }catch (SocketException e){
