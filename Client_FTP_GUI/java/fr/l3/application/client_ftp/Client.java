@@ -1,7 +1,10 @@
 package fr.l3.application.client_ftp;
 
+import fr.l3.application.client_ftp.service.CommunicationService;
+
 import java.io.*;
 import java.net.*;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 
@@ -26,7 +29,8 @@ public class Client {
 
 		
 	}
-	
+
+
 	public static Socket getSocket() {
 		return Client.sck_cmd;
 	}
@@ -130,9 +134,12 @@ public class Client {
 		String rep_serv = MainApp.getCommunicationService().getLastRep();
 		//System.out.println("Cmd : "+cmd+" / "+rep_serv);
 		if(cmd.toLowerCase().startsWith("bye")){
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			Client.deconnexionServeur();
-			//System.out.println("///////////////////////");
-			Thread.dumpStack();
 		}
 
 
@@ -160,13 +167,14 @@ public class Client {
 	}
 
 	public static void receptionFichier(String fileName,int port) {
-		Thread nt = new Thread(new FileTransfert(fileName,port,'R'),"Reception Fichier");
+		FileTransfert ft = new FileTransfert(fileName,port,'R');
+		Thread nt = new Thread(ft,"Reception Fichier : "+ Paths.get(fileName).getFileName());
 		nt.start();
-		
+
 	}
 
 	public static void envoieFichier(String fileName,int port){
-		Thread nt = new Thread(new FileTransfert(fileName,port,'E'),"Envoi Fichier");
+		Thread nt = new Thread(new FileTransfert(fileName,port,'E'),"Envoi Fichier : "+ Paths.get(fileName).getFileName());
 		nt.start();
 	}
 	

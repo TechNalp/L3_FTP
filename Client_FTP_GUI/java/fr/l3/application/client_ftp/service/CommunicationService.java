@@ -5,10 +5,15 @@ import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -59,7 +64,7 @@ public class CommunicationService extends Service<Void> {
 
     public boolean normalStop = false; // Indique si la demande de deconnexion est voulu ou non
 
-    public volatile Set<Thread> fileTransfertThreadSet = new HashSet<Thread>();
+    public volatile Set<Socket> fileTransfertSockets;
 
     public CommunicationService(String hote, int port) {
         this.hote = hote;
@@ -70,16 +75,25 @@ public class CommunicationService extends Service<Void> {
 
     public void stopConnexion(){
         if(this.connected){
-            MainApp.getCommunicationService().thEcoute.interrupt();
-            System.out.print('\n');
-            MainApp.getCommunicationService().thEnvoi.interrupt();
             try {
                 Client.getSocket().close();
+
+            MainApp.getCommunicationService().thEcoute.interrupt();
+            MainApp.getCommunicationService().thEnvoi.interrupt();
+
             }catch (IOException e){
                 MainApp.getMainController().addError("Erreur lors de la fermeture de la connexion");
             }
+            this.fileTransfertSockets.forEach(i-> {
+                try {
+                    i.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            this.fileTransfertSockets.clear();
         }
-        //this.fileTransfertThreadSet.forEach();
         this.lastRep = "";
         this.lastCmd = "";
         this.connected = false;
@@ -89,6 +103,7 @@ public class CommunicationService extends Service<Void> {
 
     @Override
     protected Task<Void> createTask() {
+        this.fileTransfertSockets = new HashSet<>();
         return new Task<Void>(){
 
             @Override
@@ -97,8 +112,7 @@ public class CommunicationService extends Service<Void> {
 
                 try {
                     System.in.readNBytes(System.in.available());
-                } catch (IOException e) {
-                }
+                } catch (IOException e) {}
 
                 MainApp.getMainController().addText("Tentative de résolution de l'hôte");
                 CommunicationService.this.addressFound=false;

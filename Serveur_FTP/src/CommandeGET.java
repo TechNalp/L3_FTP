@@ -18,6 +18,7 @@ public class CommandeGET extends Commande {
 			System.out.println("Ok");
 			if(commandeArgs.length == 0) {
 				ps.println("2 Veuillez choisir le fichier à recevoir");
+				return;
 			}else {
 				File temp = new File(this.srv.CWD+FileSystems.getDefault().getSeparator()+commandeArgs[0]);
 				try {
@@ -34,8 +35,7 @@ public class CommandeGET extends Commande {
 						}
 					}
 				} catch (IOException e) {e.printStackTrace();}
-				
-				
+
 			}
 				Thread nt = new Thread(new FileTransfert(filePath, 'E', srv),"Envoi Fichier client : "+srv.clientNumber);
 				nt.start();

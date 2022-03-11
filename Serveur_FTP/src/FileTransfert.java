@@ -11,6 +11,8 @@ public class FileTransfert implements Runnable{
 	char type; // Indique si on doit envoyer ou recevoir
 	Server srv;
 	int port;
+	ServerSocket serv_sck = null;
+	Socket sck = null;
 
 	public FileTransfert(String fileName, char type,Server srv) {
 		this.fileName = fileName;
@@ -29,8 +31,8 @@ public class FileTransfert implements Runnable{
 					System.out.println(Server.availablePort);
 				}
 				this.srv.ps.println("1 "+ this.port + " <- Port transfert fichier");
-				ServerSocket serv_sck = new ServerSocket(this.port);
-				Socket sck = serv_sck.accept();
+				this.serv_sck = new ServerSocket(this.port);
+				this.sck = serv_sck.accept();
 				if(Thread.currentThread().isInterrupted()){
 					Server.availablePort.remove((Object)this.port);
 					sck.close();
@@ -40,7 +42,7 @@ public class FileTransfert implements Runnable{
 				}
 				BufferedInputStream is;
 				BufferedOutputStream os;
-
+				sck.getInputStream().read(); // Attent que le client envoi un octect pour confirmer que le transfert puisse commencer
 				if(this.type=='E'){ // Si on doit envoyer un fichier
 					this.srv.ps.println("1 Fichier à Recevoir : " + this.fileName);
 					is = new BufferedInputStream(new FileInputStream(this.fileName));
@@ -88,16 +90,19 @@ public class FileTransfert implements Runnable{
 					Server.availablePort.remove((Object)this.port);
 					System.out.println(Server.availablePort);
 				}
-				sck.close();
 				serv_sck.close();
+				sck.close();
+
 
 
 			} catch (SocketException e) {
-				System.out.println("[THREAD] Client déconnecté");
+				System.out.println("[THREAD] Transfert Interrompu");
 				synchronized (this){
 					Server.availablePort.remove((Object)this.port);
 				}
 				this.srv.sck.close();
+				this.sck.close();
+				this.serv_sck.close();
 			}
 		} catch (IOException e) {
 			this.srv.ps.println("2 Erreur lors du transfert de fichier");

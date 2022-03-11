@@ -51,19 +51,21 @@ public class Server implements Runnable{
                         CommandExecutor.executeCommande(ps, commande, this);
                     }
                 }catch (NullPointerException e){
-                    System.out.println("\n[THREAD] Client déconnecté\n");
+                    System.out.println("\n[THREAD] 1 Client déconnecté\n");
+
                     this.sck.close();
                     return;
                 }
-                System.out.println("\n[THREAD] Client déconnecté\n");
+                System.out.println("\n[THREAD] 2 Client déconnecté\n");
 
                 this.sck.close();
 
             }catch (SocketException e){
-                System.out.println("\n[THREAD] Client déconnecté\n");
+                e.printStackTrace();
+                System.out.println("\n[THREAD] 3 Client déconnecté\n");
                 this.sck.close();
             }
-        }catch (IOException e){}
+        }catch (IOException e){e.printStackTrace();}
     }
 }
 
