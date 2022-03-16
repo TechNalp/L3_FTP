@@ -2,7 +2,9 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Server implements Runnable{
     private static int numberOfClient = 0;
@@ -17,6 +19,7 @@ public class Server implements Runnable{
     String userConnecting = "";
     final static int  firstAvailablePort = 3500;
     static volatile List<Integer> availablePort = new ArrayList<>();
+    static volatile Set<String> userConnected = new HashSet<>();
 
     public Server(Socket sck){
         this.clientNumber = Server.numberOfClient++;
@@ -51,18 +54,20 @@ public class Server implements Runnable{
                         CommandExecutor.executeCommande(ps, commande, this);
                     }
                 }catch (NullPointerException e){
-                    System.out.println("\n[THREAD] 1 Client déconnecté\n");
+                    System.out.println("\n[THREAD] Client déconnecté\n");
+                    Server.userConnected.remove(this.userConnecting);
 
                     this.sck.close();
                     return;
                 }
-                System.out.println("\n[THREAD] 2 Client déconnecté\n");
-
+                System.out.println("\n[THREAD] Client déconnecté\n");
+                Server.userConnected.remove(this.userConnecting);
                 this.sck.close();
 
             }catch (SocketException e){
                 e.printStackTrace();
-                System.out.println("\n[THREAD] 3 Client déconnecté\n");
+                System.out.println("\n[THREAD] Client déconnecté\n");
+                Server.userConnected.remove(this.userConnecting);
                 this.sck.close();
             }
         }catch (IOException e){e.printStackTrace();}

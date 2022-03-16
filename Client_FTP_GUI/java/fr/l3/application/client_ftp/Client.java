@@ -1,11 +1,8 @@
 package fr.l3.application.client_ftp;
 
-import fr.l3.application.client_ftp.service.CommunicationService;
-
 import java.io.*;
 import java.net.*;
 import java.nio.file.Paths;
-import java.util.Locale;
 
 
 public class Client {
@@ -93,9 +90,9 @@ public class Client {
 			MainApp.getMainController().addInfo("Nom d'utilisateur OK");
 
 			Client.envoyerCommande("pass "+ids[1]);
-
-		if(Client.ecouterServeur().startsWith("2")){
-			MainApp.getMainController().addError("Mot de passe erronée");
+		rep = Client.ecouterServeur();
+		if(rep.startsWith("2")){
+			MainApp.getMainController().addError(rep.substring(2));
 			MainApp.getMainController().addError("Arrêt de la connexion");
 			MainApp.getCommunicationService().stopConnexion();
 			return false;
@@ -130,9 +127,9 @@ public class Client {
 	}
 
 	
-	public static void analyseCmdSend(String cmd) throws IOException {
+	public static boolean analyseCmdSend(String cmd) throws IOException {
 		String rep_serv = MainApp.getCommunicationService().getLastRep();
-		//System.out.println("Cmd : "+cmd+" / "+rep_serv);
+		System.out.println(cmd);
 		if(cmd.toLowerCase().startsWith("bye")){
 			try {
 				Thread.sleep(20);
@@ -140,30 +137,48 @@ public class Client {
 				e.printStackTrace();
 			}
 			Client.deconnexionServeur();
+			return true;
 		}
 
 
 		if(cmd.toLowerCase().startsWith("get")){
-			//System.out.println("get");
+			Client.envoyerCommande(cmd);
+			//Client.sck_cmd.getOutputStream().write(255);
 			rep_serv = MainApp.getCommunicationService().getLastRep();
 			while(!rep_serv.toLowerCase().contains("port transfert fichier")){
 				rep_serv = MainApp.getCommunicationService().getLastRep();
-				//System.out.println("// "+rep_serv);
 				if(rep_serv.startsWith("2")){
-					return;
+					return true;
 				}
 			}
-			//System.out.println("get while out");
 			Client.receptionFichier(new File(cmd.split(" ")[1]).getName(), Integer.parseInt(rep_serv.split(" ")[1]));
-			//System.out.println("get reception lauch");
 			MainApp.getCommunicationService().setLastRep("");
 			
 		}else if(cmd.toLowerCase().startsWith("stor")){
-			while(rep_serv.toLowerCase().contains("port transfert fichier"));
+			String filePath = "";
+			String[] commandArg = cmd.split(" ");
+			if(commandArg.length <2 || commandArg[1].equals("")){
+				MainApp.getMainController().addError("Veuillez saisir le nom du fichier à envoyer");
+				//Client.sck_cmd.getOutputStream().write(0);
+				return true;
+			}
+			if(!new File(commandArg[1]).isFile()){
+				MainApp.getMainController().addError("Le fichier : "+ Paths.get(commandArg[1]).getFileName().toString()+" n'existe pas");
+				//Client.sck_cmd.getOutputStream().write(0);
+				return true;
+			}
+			Client.envoyerCommande(cmd);
+			while(!rep_serv.toLowerCase().contains("port transfert fichier")){
+				rep_serv = MainApp.getCommunicationService().getLastRep();
+				if(rep_serv.startsWith("2")){
+					return true;
+				}
+			}
 			Client.envoieFichier(new File(cmd.split(" ")[1]).getCanonicalPath(),Integer.parseInt(rep_serv.split(" ")[1]));
+			MainApp.getCommunicationService().setLastRep("");
+			return true;
 		}
-		MainApp.getCommunicationService().setLastRep("");
-
+		return false;
 	}
 
 	public static void receptionFichier(String fileName,int port) {
@@ -174,7 +189,8 @@ public class Client {
 	}
 
 	public static void envoieFichier(String fileName,int port){
-		Thread nt = new Thread(new FileTransfert(fileName,port,'E'),"Envoi Fichier : "+ Paths.get(fileName).getFileName());
+		FileTransfert ft = new FileTransfert(fileName,port,'E');
+		Thread nt = new Thread(ft,"Envoi Fichier : "+ Paths.get(fileName).getFileName());
 		nt.start();
 	}
 	

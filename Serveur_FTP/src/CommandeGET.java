@@ -15,7 +15,6 @@ public class CommandeGET extends Commande {
 
 	public void execute() {
 			String filePath = "";
-			System.out.println("Ok");
 			if(commandeArgs.length == 0) {
 				ps.println("2 Veuillez choisir le fichier à recevoir");
 				return;

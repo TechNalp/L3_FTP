@@ -8,7 +8,6 @@ public class CommandePASS extends Commande {
 	}
 
 	public void execute() {
-		// Le mot de passe est : abcd
 		if((!srv.userOk) || srv.userConnecting.isBlank()) {
 			ps.println("2 Veuillez d'abord saisir votre nom d'utilisateur avec la commande user");
 		}else{
@@ -18,7 +17,12 @@ public class CommandePASS extends Commande {
 				br.close();
 
 				if(verifMdp.equals(commandeArgs[0])){
+					if(Server.userConnected.contains(srv.userConnecting)){
+						ps.println("2 Un utilisateur avec cet identifaint est déjà connecté");
+						return;
+					}
 					srv.pwOk = true;
+					Server.userConnected.add(srv.userConnecting);
 					ps.println("1 Commande pass OK");
 					ps.println("0 Vous êtes bien connecté sur notre serveur");
 
@@ -26,7 +30,7 @@ public class CommandePASS extends Commande {
 					ps.println("2 Mot de passe faux");
 				}
 
-			} catch (FileNotFoundException e) {} catch (IOException e) {}
+			} catch (IOException e) {e.printStackTrace();}
 		}
 		
 	}

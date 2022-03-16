@@ -1,21 +1,12 @@
 package fr.l3.application.client_ftp;
 
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class FileTransfert implements Runnable{
 

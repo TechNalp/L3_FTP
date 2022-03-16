@@ -5,15 +5,11 @@ import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -186,7 +182,6 @@ public class CommunicationService extends Service<Void> {
                                     }else{
                                         MainApp.getMainController().addText(CommunicationService.this.lastRep);
                                     }
-                                    Client.analyseCmdSend(CommunicationService.this.lastCmd);
                                     CommunicationService.this.lastCmd="";
                                 }catch (IOException e){
                                     if(!CommunicationService.this.normalStop){
@@ -222,7 +217,10 @@ public class CommunicationService extends Service<Void> {
                                     }else {
                                     	CommunicationService.this.lastCmd = temp;
                                     }
-                                    Client.envoyerCommande(CommunicationService.this.lastCmd);
+                                    if(!Client.analyseCmdSend(CommunicationService.this.lastCmd)){
+                                        Client.envoyerCommande(CommunicationService.this.lastCmd);
+                                    }
+
 
 
 

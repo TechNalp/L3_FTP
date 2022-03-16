@@ -4,20 +4,14 @@ package fr.l3.application.client_ftp;
 import fr.l3.application.client_ftp.controller.MainController;
 import fr.l3.application.client_ftp.service.CommunicationService;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
 
 public class MainApp extends Application {
 
