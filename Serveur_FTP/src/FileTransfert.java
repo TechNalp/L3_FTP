@@ -43,6 +43,9 @@ public class FileTransfert implements Runnable{
 					sck.close();
 					serv_sck.close();
 					System.out.println("[THREAD] Transfert interrompu");
+					synchronized (this){
+						Server.availablePort.remove((Object)this.port);
+					}
 					return;
 				}
 
@@ -62,10 +65,14 @@ public class FileTransfert implements Runnable{
 							is.close();
 							os.close();
 							System.out.println("[THREAD] Transfert interrompu pour le fichier : " + this.fileName);
+							synchronized (this){
+								Server.availablePort.remove((Object)this.port);
+							}
 							return;
 						}
 						os.write(oct);
 					}
+
 					this.srv.ps.println("0 Fin du transfert du fichier : "+this.fileName);
 					is.close();
 					os.close();
@@ -104,10 +111,23 @@ public class FileTransfert implements Runnable{
 							is.close();
 							os.close();
 							System.out.println("[THREAD] Transfert interrompu");
+							synchronized (this){
+								Server.availablePort.remove((Object)this.port);
+							}
 							return;
 						}
 						os.write(oct);
 					}
+
+					try {
+						Thread.sleep(20); // Laisse le temps de changer l'état de connexion
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if(!Server.userConnected.contains(this.srv.userConnecting)){
+						throw new SocketException("Transfert interrompu");
+					}
+
 					this.srv.ps.println("0 Fin du transfert de fichier");
 					is.close();
 					os.close();
@@ -127,22 +147,23 @@ public class FileTransfert implements Runnable{
 				if(this.fileExist){
 					try {
 						if (this.tempFile != null) {
-							this.srv.ps.println("0 tentative de restauration de : " + this.fileName);
+							System.out.println("Tentative de restauration de : " + this.fileName);
 							FileChannel os = new FileOutputStream(srv.CWD + FileSystems.getDefault().getSeparator() + this.fileName).getChannel();
 							FileChannel is = new FileInputStream(tempFile.toString()).getChannel();
 
 							os.transferFrom(is, 0, is.size());
 							is.close();
 							os.close();
+							System.out.println("Restauration de : "+this.fileName+" réussi");
 						}else{
-							this.srv.ps.println("2 impossible de restaurer : "+ this.fileName);
-							this.srv.ps.println("2 suppression de : "+ this.fileName);
+							System.out.println("Impossible de restaurer : "+ this.fileName);
+							System.out.println("Suppression de : "+ this.fileName);
 							Files.delete(Paths.get(this.fileName));
 
 						}
 					}catch (IOException ex){
-							this.srv.ps.println("2 impossible de restaurer : "+ this.fileName);
-							this.srv.ps.println("2 suppression de : "+ this.fileName);
+							System.out.println("Impossible de restaurer : "+ this.fileName);
+							System.out.println("Suppression de : "+ this.fileName);
 
 					}
 
@@ -156,7 +177,7 @@ public class FileTransfert implements Runnable{
 				this.serv_sck.close();
 			}
 		} catch (IOException e) {
-			this.srv.ps.println("2 Erreur lors du transfert de fichier");
+			System.out.println("Erreur lors du transfert de fichier");
 		}
 		
 		

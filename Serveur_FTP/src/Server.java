@@ -65,7 +65,6 @@ public class Server implements Runnable{
                 this.sck.close();
 
             }catch (SocketException e){
-                e.printStackTrace();
                 System.out.println("\n[THREAD] Client déconnecté\n");
                 Server.userConnected.remove(this.userConnecting);
                 this.sck.close();

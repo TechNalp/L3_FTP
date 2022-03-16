@@ -2,6 +2,7 @@ package fr.l3.application.client_ftp;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 
 
@@ -129,7 +130,6 @@ public class Client {
 	
 	public static boolean analyseCmdSend(String cmd) throws IOException {
 		String rep_serv = MainApp.getCommunicationService().getLastRep();
-		System.out.println(cmd);
 		if(cmd.toLowerCase().startsWith("bye")){
 			try {
 				Thread.sleep(20);
@@ -163,7 +163,11 @@ public class Client {
 				return true;
 			}
 			if(!new File(commandArg[1]).isFile()){
-				MainApp.getMainController().addError("Le fichier : "+ Paths.get(commandArg[1]).getFileName().toString()+" n'existe pas");
+				try {
+					MainApp.getMainController().addError("Le fichier : " + Paths.get(commandArg[1]).getFileName().toString() + " n'existe pas");
+				}catch (InvalidPathException e){
+					MainApp.getMainController().addError(commandArg[1]+" n'est pas un nom valide");
+				}
 				//Client.sck_cmd.getOutputStream().write(0);
 				return true;
 			}

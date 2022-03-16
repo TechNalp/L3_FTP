@@ -172,6 +172,7 @@ public class FileTransfert implements Runnable{
 					} else {
 						MainApp.getMainController().addInfo("Suppresion de:  " + this.fileName);
 						Files.delete(Paths.get(this.fileName));
+
 					}
 				}
 				if(this.tempFile!=null){
