@@ -60,7 +60,7 @@
       <children>
          <HBox prefHeight="294.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-               <AnchorPane prefHeight="294.0" prefWidth="500.0" HBox.hgrow="SOMETIMES">
+               <AnchorPane prefHeight="294.0" prefWidth="500.0" HBox.hgrow="ALWAYS">
                   <children>
                      <Label fx:id="treeServerLabel" alignment="CENTER" contentDisplay="CENTER" layoutY="14.0" prefHeight="21.0" prefWidth="500.0" text="Serveur" textAlignment="CENTER" textFill="#005b7d" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                         <font>
@@ -70,7 +70,16 @@
                      <TreeView fx:id="treeServer" layoutX="25.0" layoutY="41.0" prefHeight="237.0" prefWidth="449.0" AnchorPane.bottomAnchor="15.666666666666657" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="41.00000000000003" />
                   </children>
                </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+               <AnchorPane prefHeight="294.0" prefWidth="500.0" HBox.hgrow="ALWAYS">
+                  <children>
+                     <Label fx:id="treeServerLabel1" alignment="CENTER" contentDisplay="CENTER" layoutY="14.0" prefHeight="21.0" prefWidth="500.0" text="Client" textAlignment="CENTER" textFill="#005b7d" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                        <font>
+                           <Font size="18.0" />
+                        </font>
+                     </Label>
+                     <TreeView fx:id="treeClient" layoutX="25.0" layoutY="41.0" prefHeight="237.0" prefWidth="449.0" AnchorPane.bottomAnchor="15.666666666666657" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="41.00000000000003" />
+                  </children>
+               </AnchorPane>
             </children>
          </HBox>
       </children>

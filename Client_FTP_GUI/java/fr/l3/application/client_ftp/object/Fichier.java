@@ -1,27 +1,18 @@
 package fr.l3.application.client_ftp.object;
 
-import javax.swing.*;
+
 
 public class Fichier {
 
     String name;
 
-    String path;
+    char type;
 
-    long size;
-
-    Icon icone;
-
-    String type;
-
-    long derniereModification;
-
-    public void toFichier(String ligne){
-        if(ligne.startsWith("d")){
-            this.type = "Dossier";
-        }else{
-            this.type = "Fichier";
-        }
+    public Fichier(String name, char type){
+        this.name = name;
+        this.type = type;
     }
+
+
 
 }

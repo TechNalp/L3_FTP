@@ -4,6 +4,10 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
 
 
 public class Client {
@@ -14,6 +18,22 @@ public class Client {
 	public static String hostname ="";
 	static int port = 0;
 	static BufferedReader keyboardInput = new BufferedReader(new InputStreamReader(System.in));
+
+	public static String cwd ="";
+
+	private volatile static boolean displayTree = false;
+
+	public static boolean canDisplayTree() {
+		return displayTree;
+	}
+
+	public static void setDisplayTree(boolean displayTree) {
+		Client.displayTree = displayTree;
+	}
+
+
+
+	public static List<String> lsContent = new ArrayList<>();
 	
 	public static String lireClavier() throws IOException {
 		long startTime = System.currentTimeMillis();
@@ -140,10 +160,40 @@ public class Client {
 			return true;
 		}
 
+		if(cmd.toLowerCase().startsWith("ls")){
+			Client.envoyerCommande(cmd);
+			rep_serv = MainApp.getCommunicationService().getLastRep();
+			while (!rep_serv.toLowerCase().contains("listing de :")){
+				if(rep_serv.startsWith("2") || rep_serv.startsWith("0")){
+					break;
+				}
+				rep_serv = MainApp.getCommunicationService().getLastRep();
+			}
+			if(rep_serv.startsWith("2") || rep_serv.startsWith("0")){
+				return true;
+			}
+			Client.cwd = rep_serv.split("\"")[1];
+			String rep_serv2 = "";
+			while(!rep_serv.startsWith("2") && !rep_serv.startsWith("0")){
+				rep_serv2 = MainApp.getCommunicationService().getLastRep();
+				if(rep_serv2.equals(rep_serv)){
+					continue;
+				}else{
+					rep_serv = rep_serv2;
+					Client.lsContent.add(rep_serv);
+				}
+
+			}
+			Client.lsContent.remove(rep_serv);
+
+			Client.displayTree = true;
+
+
+			return true;
+		}
 
 		if(cmd.toLowerCase().startsWith("get")){
 			Client.envoyerCommande(cmd);
-			//Client.sck_cmd.getOutputStream().write(255);
 			rep_serv = MainApp.getCommunicationService().getLastRep();
 			while(!rep_serv.toLowerCase().contains("port transfert fichier")){
 				rep_serv = MainApp.getCommunicationService().getLastRep();

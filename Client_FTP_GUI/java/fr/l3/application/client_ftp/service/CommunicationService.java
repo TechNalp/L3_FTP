@@ -62,6 +62,7 @@ public class CommunicationService extends Service<Void> {
 
     public volatile Set<Socket> fileTransfertSockets;
 
+
     public CommunicationService(String hote, int port) {
         this.hote = hote;
         this.port = port;
@@ -236,6 +237,7 @@ public class CommunicationService extends Service<Void> {
 
                         MainApp.getCommunicationService().thEcoute.start();
                         MainApp.getCommunicationService().thEnvoi.start();
+                        MainApp.getMainController().drawServerTree();
                     }else{
                         MainApp.getCommunicationService().stopConnexion();
                     }

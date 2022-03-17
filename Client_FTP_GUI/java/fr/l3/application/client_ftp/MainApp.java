@@ -16,6 +16,9 @@ import java.io.IOException;
 public class MainApp extends Application {
 
     private Stage mainWindow;
+
+
+
     private Pane rootLayout;
 
     private static CommunicationService cs = null;
@@ -24,6 +27,9 @@ public class MainApp extends Application {
 
     private static String username;
 
+    public Pane getRootLayout() {
+        return rootLayout;
+    }
 
     public static MainController getMainController(){
         return MainApp.cc;
