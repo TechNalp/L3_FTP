@@ -1,14 +1,11 @@
 package fr.l3.application.client_ftp.controller;
 
-import com.sun.source.tree.Tree;
 import fr.l3.application.client_ftp.Client;
 import fr.l3.application.client_ftp.MainApp;
-import fr.l3.application.client_ftp.object.Fichier;
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
@@ -23,24 +20,16 @@ import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
-import javax.tools.DiagnosticListener;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.DosFileAttributes;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ResourceBundle;
 
 
@@ -51,8 +40,10 @@ public class MainController implements Initializable{
 
     //********** Header ***********//
 
+    private String clientCWD = ".";
+
     @FXML
-    Button connexionButton;
+    public Button connexionButton;
 
     @FXML
     TextField hoteField;
@@ -192,8 +183,10 @@ public class MainController implements Initializable{
 
 
     //------------ ARBRE_SERVEUR CONTROL --------//
+        @FXML
+        public void drawServerTree(){
 
-       public void drawServerTree(){
+
            try {
                Client.analyseCmdSend("ls");
            } catch (IOException e) {
@@ -206,6 +199,9 @@ public class MainController implements Initializable{
                treeServer.setRoot(rootItem);
                Client.setDisplayTree(false);
                String currentPath = Paths.get(Client.cwd).getRoot().toString();
+
+               TreeItem<String> current = treeServer.getRoot();
+
                for (int i = 0; i < Paths.get(Client.cwd).getNameCount(); i++) {
 
                    try {
@@ -217,8 +213,12 @@ public class MainController implements Initializable{
 
                    //ajouter au parent
 
-                   treeServer.getRoot().getChildren().add(new TreeItem<String>(Paths.get(Client.cwd).getName(i).toString(),new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(),16,16,true,false))));
+                  current.getChildren().add(new TreeItem<String>(Paths.get(Client.cwd).getName(i).toString(),new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(),16,16,true,false))));
                    currentPath = currentPath+File.separator+Paths.get(Client.cwd).getName(i);
+
+                   current = current.getChildren().get(0);
+
+
 
                    //Paths.get(Client.cwd).getName(i);
 
@@ -234,35 +234,50 @@ public class MainController implements Initializable{
 
 
     //------------ ARBRE_CLIENT CONTROL --------//
+
+        @FXML
         public void drawClientTree(){
             try {
-                TreeItem<File> rootItem = new TreeItem<File>(new File(new File(".").getCanonicalPath()),new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(),16,16,true,false)));
+                TreeItem<File> rootItem = new TreeItem<File>(new File(new File(this.clientCWD).getCanonicalPath()),new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(),16,16,true,false)));
                 rootItem.setExpanded(true);
             treeClient.setRoot(rootItem);
 
 
-            File[] fileList = new File(".").listFiles();
+            if(new File(new File(this.clientCWD).getCanonicalPath()).getParent() != null){
+                rootItem.getChildren().add(new TreeItem<>(new File(".."),new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(),16,16,true,false))));
+            }
 
-                for (File f : fileList){
+            new Thread(()-> {
+                File[] fileList = new File(this.clientCWD).listFiles();
+                ;
+                for (File f : fileList) {
                     f = new File(f.getName());
-                    if(f.isDirectory()){
-                        if(f.isHidden()){
-                            rootItem.getChildren().add(new TreeItem<>(f,new ImageView(new Image(MainApp.class.getResource("hide_folder_logo.png").toString(),16,16,true,false))));
-                        }else{
-                            rootItem.getChildren().add(new TreeItem<>(f,new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(),16,16,true,false))));
+                    try {
+                        System.out.println(f.getCanonicalPath() + " " + Files.isDirectory(f.toPath()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (f.isDirectory()) {
+                        if (f.isHidden()) {
+                            rootItem.getChildren().add(new TreeItem<>(f, new ImageView(new Image(MainApp.class.getResource("hide_folder_logo.png").toString(), 16, 16, true, false))));
+                        } else {
+                            rootItem.getChildren().add(new TreeItem<>(f, new ImageView(new Image(MainApp.class.getResource("folder_logo.png").toString(), 16, 16, true, false))));
                         }
 
-                    }else{
-                        rootItem.getChildren().add(new TreeItem<>(f,new ImageView(new Image(MainApp.class.getResource("file_logo.png").toString(),16,16,true,false))));
+                    } else {
+                        rootItem.getChildren().add(new TreeItem<>(f, new ImageView(new Image(MainApp.class.getResource("file_logo.png").toString(), 16, 16, true, false))));
                     }
 
                 }
+            }).start();
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     //------------ ARBRE_CLIENT CONTROL --------//
+
+
 
 
     @FXML
@@ -274,6 +289,9 @@ public class MainController implements Initializable{
             @Override
             public void handle(MouseEvent mouseEvent) {
                 if (MainApp.getCommunicationService() != null && MainApp.getCommunicationService().isConnected()) {
+                    if(((TreeItem<File>)treeClient.getSelectionModel().getSelectedItem()).getValue().getName().equals("..") || treeClient.getSelectionModel().getSelectedItem() == treeClient.getRoot()){
+                        return;
+                    }
                     TreeItem<File> ti = (TreeItem<File>) treeClient.getSelectionModel().getSelectedItem();
                     Dragboard db = treeClient.startDragAndDrop(TransferMode.ANY);
                     ClipboardContent content = new ClipboardContent();
@@ -304,10 +322,44 @@ public class MainController implements Initializable{
             public void handle(DragEvent dragEvent) {
 
                 if(dragEvent.getGestureSource() != treeServer && dragEvent.getDragboard().hasString()){
-                    System.out.println(dragEvent.getDragboard().getString());
+                    try {
+                        Client.analyseCmdSend("stor "+dragEvent.getDragboard().getString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 dragEvent.consume();
                 treeServer.setCursor(Cursor.DEFAULT);
+            }
+        });
+
+        treeClient.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+                    if(mouseEvent.getClickCount() == 2){
+                        if(((TreeItem<File>)treeClient.getSelectionModel().getSelectedItem()).getValue().getName().equals("..")){
+
+
+                                MainController.this.clientCWD = MainController.this.clientCWD+File.separator+"..";
+
+
+                            System.err.println("22 "+MainController.this.clientCWD);
+                                drawClientTree();
+
+                        }else{
+                            if(((TreeItem<File>)treeClient.getSelectionModel().getSelectedItem()).getValue().isDirectory()){
+                                /*try {
+                                   // drawClientTree(((TreeItem<File>)treeClient.getSelectionModel().getSelectedItem()).getValue().getCanonicalPath());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }*/
+                            }
+                        }
+                    }
+                }
+
+                mouseEvent.consume();
             }
         });
     }

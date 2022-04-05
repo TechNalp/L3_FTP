@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 
 public class MainApp extends Application {
@@ -43,6 +44,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage mainWindow) throws IOException {
+
         this.intitMainWindow(mainWindow);
         this.loadMainWindow();
         this.mainWindow.show();
@@ -72,6 +74,7 @@ public class MainApp extends Application {
     }
 
 
+
     public static void startCommunicationService(String hote, int port){
         if(MainApp.cs == null){
             MainApp.cs = new CommunicationService(hote,port);
@@ -88,6 +91,10 @@ public class MainApp extends Application {
         }
     }
 
+
+    public static File[] getFileList(String path){
+        return new File(path).listFiles();
+    }
 
 
     public static void main(String[] args){

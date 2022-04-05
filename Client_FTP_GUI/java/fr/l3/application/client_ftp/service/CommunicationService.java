@@ -4,6 +4,8 @@ import fr.l3.application.client_ftp.*;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -94,6 +96,17 @@ public class CommunicationService extends Service<Void> {
         this.lastRep = "";
         this.lastCmd = "";
         this.connected = false;
+        Platform.runLater(()->{
+            MainApp.getMainController().connexionButton.setText("Connexion");
+            MainApp.getMainController().connexionButton.setStyle("");
+            MainApp.getMainController().connexionButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    MainApp.getMainController().startConnexion();
+                }
+
+            });
+        });
         Platform.runLater(this::cancel);
 
     }

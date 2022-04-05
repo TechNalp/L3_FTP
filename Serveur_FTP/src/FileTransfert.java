@@ -11,14 +11,14 @@ import java.rmi.ServerError;
 
 public class FileTransfert implements Runnable{
 	
-	String fileName;
+	String fileName; // Nom du fichier à transferer
 	char type; // Indique si on doit envoyer ou recevoir
-	Server srv;
-	int port;
-	ServerSocket serv_sck = null;
-	Socket sck = null;
-	Path tempFile = null;
-	boolean fileExist = false;
+	Server srv; // Instance du serveur qui gère le client courant
+	int port; // Port qui servira au transfert du fichier
+	ServerSocket serv_sck = null; // Socket servant au transfert des commande
+	Socket sck = null; // Socket servant au transfert du fichier
+	Path tempFile = null; // Chemin vers le fichier de sauvegarde
+	boolean fileExist = false; // Si le fichier existe déjà
 	public FileTransfert(String fileName, char type,Server srv) {
 		this.fileName = fileName;
 		this.type=type;
@@ -31,20 +31,19 @@ public class FileTransfert implements Runnable{
 		try{
 			try {
 				synchronized (this){
-					for(this.port=Server.firstAvailablePort;Server.availablePort.contains(this.port);this.port++);
+					for(this.port=Server.firstAvailablePort;Server.availablePort.contains(this.port);this.port++); // On cherche le premier port disponible
 					Server.availablePort.add(this.port);
-					System.out.println(Server.availablePort);
 				}
-				this.srv.ps.println("1 "+ this.port + " <- Port transfert fichier");
+				this.srv.ps.println("1 "+ this.port + " <- Port transfert fichier"); // On envoie le port choisi au client
 				this.serv_sck = new ServerSocket(this.port);
 				this.sck = serv_sck.accept();
-				if(Thread.currentThread().isInterrupted()){
+				if(Thread.currentThread().isInterrupted()){ // Si le thread est interrompu
 					Server.availablePort.remove((Object)this.port);
 					sck.close();
 					serv_sck.close();
-					System.out.println("[THREAD] Transfert interrompu");
+					System.out.println("["+Thread.currentThread().getName()+"] Transfert interrompu");
 					synchronized (this){
-						Server.availablePort.remove((Object)this.port);
+						Server.availablePort.remove((Object)this.port); // Le port est de nouveau disponible on l'enlève de la liste des ports utilisé
 					}
 					return;
 				}
@@ -57,16 +56,16 @@ public class FileTransfert implements Runnable{
 					is = new BufferedInputStream(new FileInputStream(this.fileName));
 					os = new BufferedOutputStream(sck.getOutputStream());
 					this.srv.ps.println("1 Début du transfert du fichier : "+this.fileName);
-					for(int oct = is.read();oct!=-1;oct = is.read()) {
+					for(int oct = is.read();oct!=-1;oct = is.read()) { // Transfert vers le client
 						if(Thread.currentThread().isInterrupted()){
-							synchronized (this){Server.availablePort.remove((Object)this.port);}
+							synchronized (this){Server.availablePort.remove((Object)this.port);}// Le port est de nouveau disponible on l'enlève de la liste des ports utilisé
 							sck.close();
 							serv_sck.close();
 							is.close();
 							os.close();
-							System.out.println("[THREAD] Transfert interrompu pour le fichier : " + this.fileName);
+							System.out.println("["+Thread.currentThread().getName()+"] Transfert interrompu pour le fichier : " + this.fileName);
 							synchronized (this){
-								Server.availablePort.remove((Object)this.port);
+								Server.availablePort.remove((Object)this.port); // Le port est de nouveau disponible on l'enlève de la liste des ports utilisé
 							}
 							return;
 						}
@@ -79,9 +78,9 @@ public class FileTransfert implements Runnable{
 
 				}else if(this.type=='R'){ // Si on doit recevoir un fichier
 					this.srv.ps.println("1 Fichier à Envoyer : " + this.fileName);
-					this.fileExist = new File(srv.CWD+FileSystems.getDefault().getSeparator()+this.fileName).exists();
+					this.fileExist = new File(srv.CWD+FileSystems.getDefault().getSeparator()+this.fileName).exists(); // On regarde si le fichier existe déjà
 					this.tempFile = null;
-					if(fileExist){ // Création d'une sauvegarde temporaire
+					if(fileExist){ // Si le fichier existe on crée une sauvegarde qui
 						srv.ps.println("0 Création d'un fichier de sauvegarde temporaire pour : "+this.fileName);
 						try {
 							tempFile = Files.createTempFile(this.fileName.split("\\.")[0],null);
@@ -105,14 +104,14 @@ public class FileTransfert implements Runnable{
 					this.srv.ps.println("1 Début du transfert de fichier");
 					for(int oct = is.read();oct!=-1;oct = is.read()){
 						if(Thread.currentThread().isInterrupted()){
-							synchronized (this){Server.availablePort.remove((Object)this.port);}
+							synchronized (this){Server.availablePort.remove((Object)this.port);}// Le port est de nouveau disponible on l'enlève de la liste des ports utilisé
 							sck.close();
 							serv_sck.close();
 							is.close();
 							os.close();
-							System.out.println("[THREAD] Transfert interrompu");
+							System.out.println("["+Thread.currentThread().getName()+"] Transfert interrompu");
 							synchronized (this){
-								Server.availablePort.remove((Object)this.port);
+								Server.availablePort.remove((Object)this.port);// Le port est de nouveau disponible on l'enlève de la liste des ports utilisé
 							}
 							return;
 						}
@@ -135,7 +134,6 @@ public class FileTransfert implements Runnable{
 				}
 				synchronized (this){
 					Server.availablePort.remove((Object)this.port);
-					System.out.println(Server.availablePort);
 				}
 				serv_sck.close();
 				sck.close();
@@ -143,7 +141,7 @@ public class FileTransfert implements Runnable{
 
 
 			} catch (SocketException e) {
-				System.out.println("[THREAD] Transfert Interrompu");
+				System.out.println("["+Thread.currentThread().getName()+"] Transfert Interrompu");
 				if(this.fileExist){
 					try {
 						if (this.tempFile != null) {

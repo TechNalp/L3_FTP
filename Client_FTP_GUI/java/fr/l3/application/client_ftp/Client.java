@@ -1,5 +1,10 @@
 package fr.l3.application.client_ftp;
 
+import fr.l3.application.client_ftp.controller.MainController;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+
 import java.io.*;
 import java.net.*;
 import java.nio.file.InvalidPathException;
@@ -131,11 +136,33 @@ public class Client {
 				MainApp.getMainController().addText(rep);
 			}
 		}while(!rep.startsWith("0"));
-
+		Platform.runLater(()->{
+			MainApp.getMainController().connexionButton.setText("Déconnexion");
+			MainApp.getMainController().connexionButton.setStyle("-fx-text-fill: RED");
+			MainApp.getMainController().connexionButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent actionEvent) {
+					Client.deconnexionServeur();
+					MainApp.getMainController().connexionButton.setText("Connexion");
+					MainApp.getMainController().connexionButton.setStyle("");
+					MainApp.getMainController().connexionButton.setOnAction(new EventHandler<ActionEvent>() {
+						@Override
+						public void handle(ActionEvent actionEvent) {
+							MainApp.getMainController().startConnexion();
+						}
+					});
+				}
+			});
+		});
 
 		return true;
 	}
-	
+
+
+
+
+
+
 	public static void deconnexionServeur(){
 
 		MainApp.getCommunicationService().normalStop = true;
